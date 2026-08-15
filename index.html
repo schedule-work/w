@@ -97,18 +97,6 @@
                 flex-wrap: wrap;
                 gap: 5px;
             }
-
-            .fc {
-                height: auto !important;
-            }
-        
-            .fc .fc-view-harness {
-                height: auto !important;
-            }
-        
-            .fc .fc-view-harness-active > .fc-view {
-                position: relative !important;
-            }
         }
 
         /* 다크모드 캘린더 전용 스타일 */
@@ -206,10 +194,7 @@
         ];
 
         function App() {
-            const [user, setUser] = React.useState(() => {
-                const saved = sessionStorage.getItem('cardPortalUser');
-                return saved ? JSON.parse(saved) : null;
-            });
+            const [user, setUser] = React.useState(() => { const saved = sessionStorage.getItem('cardPortalUser'); if (!saved) return null; try { const parsed = JSON.parse(saved); return parsed?.token ? parsed : null; } catch (e) { return null; } });
             const [loginInput, setLoginInput] = React.useState({ name: '', empNo: '' });
             const [events, setEvents] = React.useState([]);
             const [customHolidays, setCustomHolidays] = React.useState({});
@@ -313,27 +298,9 @@
             // ============================================================
             // ⭐ 로그인 사용자의 향후 예약
             // ============================================================
-            const myBookings = React.useMemo(() => {
-                if (!user) return [];
-            
-                const userEmpNo = String(user.empNo || '').trim();
-            
-                return events
-                    .filter(ev => {
-                        const eventEmpNo = String(
-                            ev.extendedProps?.empNo || ''
-                        ).replace(/^'/, '').trim();
-            
-                        return eventEmpNo === userEmpNo &&
-                               new Date(ev.end) >= currentTime;
-                    })
-                    .sort((a, b) =>
-                        new Date(a.start) - new Date(b.start)
-                    );
-            
-            }, [events, user, currentTime]);
-            
-            
+            const myBookings = React.useMemo(() => events.filter(ev => ev.extendedProps?.isMine === true && new Date(ev.end) >= currentTime).sort((a, b) => new Date(a.start) - new Date(b.start)), [events, currentTime]);
+
+
             // ============================================================
             // ⭐ 현재 사용 중인 예약
             // ============================================================
@@ -384,47 +351,19 @@
                 ).padStart(2, '0')}`;
             };
                         
-            const openEventDetails = (props, startObj, endObj) => {
-                setSelectedEvent(props);
-                if (DEPARTMENTS.includes(props.dept)) {
-                    setDeptSelect(props.dept); setDeptCustom('');
-                } else {
-                    setDeptSelect('직접 입력'); setDeptCustom(props.dept);
-                }
-                if (['간호부', 'QI(적정진료관리팀)', '총무팀'].includes(props.budget)) {
-                    setBudgetSelect(props.budget); setBudgetCustom('');
-                } else {
-                    setBudgetSelect('기타'); setBudgetCustom(props.budget || '');
-                }
-                
-                const cleanContact = String(props.contact || "").replace(/^'/, "").trim();
-                const pParts = cleanContact.split('-');
-                if (['010', '011', '016'].includes(pParts[0])) {
-                    setPhone1Select(pParts[0] || '010'); setPhone1Custom('');
-                } else {
-                    setPhone1Select('기타'); setPhone1Custom(pParts[0] || '');
-                }
-                setPhone2(pParts[1] || ''); setPhone3(pParts[2] || '');
+            const callApi = async (payload) => { const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }); const data = await response.json(); if (!data.success) { if (data.code === 'UNAUTHORIZED') { sessionStorage.removeItem('cardPortalUser'); setUser(null); } throw new Error(data.message || '요청 처리 중 오류가 발생했습니다.'); } return data; };
 
-                const toDateStr = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-                const toTimeStr = (d) => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-
-                const cleanEmpNo = String(props.empNo || "").replace(/^'/, "").trim();
-                const cleanUserEmpNo = String(user.empNo || "").trim();
-                const isOwnerOrAdmin = user.isAdmin || cleanEmpNo === cleanUserEmpNo;
-                const displayedEmpNo = isOwnerOrAdmin ? cleanEmpNo : cleanEmpNo.slice(0, 2) + "****";
-
-                setFormData({
-                    id: props.id, name: props.name,
-                    empNo: displayedEmpNo,
-                    startDate: toDateStr(startObj), startTimePart: toTimeStr(startObj),
-                    endDate: toDateStr(endObj), endTimePart: toTimeStr(endObj),
-                    purpose: props.purpose, details: props.details
-                });
-
-                setSelectedSlot({ startDate: toDateStr(startObj), endDate: toDateStr(endObj) });
-                setShowListModal(false);
-                setShowForm(true);
+            const openBookingById = async (id, startObj, endObj) => {
+                setLoading(true);
+                try {
+                    const data = await callApi({ action: 'GET_DETAIL', token: user.token, id }); const props = data.booking; setSelectedEvent(props);
+                    if (DEPARTMENTS.includes(props.dept)) { setDeptSelect(props.dept); setDeptCustom(''); } else { setDeptSelect('직접 입력'); setDeptCustom(props.dept || ''); }
+                    if (['간호부', 'QI(적정진료관리팀)', '총무팀'].includes(props.budget)) { setBudgetSelect(props.budget); setBudgetCustom(''); } else { setBudgetSelect('기타'); setBudgetCustom(props.budget || ''); }
+                    if (props.contact) { const p = String(props.contact).replace(/^'/, '').trim().split('-'); if (['010', '011', '016'].includes(p[0])) { setPhone1Select(p[0] || '010'); setPhone1Custom(''); } else { setPhone1Select('기타'); setPhone1Custom(p[0] || ''); } setPhone2(p[1] || ''); setPhone3(p[2] || ''); } else { setPhone1Select('010'); setPhone1Custom(''); setPhone2(''); setPhone3(''); }
+                    const toDateStr = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'), toTimeStr = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+                    setFormData({ id: props.id, name: props.name || '', empNo: props.empNo || props.empNoMasked || '비공개', startDate: toDateStr(startObj), startTimePart: toTimeStr(startObj), endDate: toDateStr(endObj), endTimePart: toTimeStr(endObj), purpose: props.purpose || '', details: props.details || '' });
+                    setSelectedSlot({ startDate: toDateStr(startObj), endDate: toDateStr(endObj) }); setShowListModal(false); setShowMyBookings(false); setShowForm(true);
+                } catch (e) { alert(e.message); } finally { setLoading(false); }
             };
 
             const startRangeStr = "2026-05-01";
@@ -437,75 +376,18 @@
             }, [events]);
 
             const fetchBookings = async (isSilent = false) => {
-                const silent = isSilent === true;
-                if (!silent) setLoading(true);
-                try {
-                    const response = await fetch(GOOGLE_SCRIPT_URL + "?v=" + new Date().getTime());
-                    const data = await response.json();
-                    setEvents(data.bookings.map(b => {
-                        const budgetColor = b.budget === '간호부' ? '#3b82f6' : b.budget === '총무팀' ? '#10b981' : b.budget === 'QI(적정진료관리팀)' ? '#f59e0b' : '#64748b';
-                        return {
-                            id: b.id, title: `[${b.dept}] ${b.name}`, start: b.startTime, end: b.endTime,
-                            extendedProps: { ...b, colorCode: budgetColor }, // ⭐ 컬러 코드 주입
-                            backgroundColor: 'transparent', // FullCalendar 기본 꽉 찬 배경 제거
-                            borderColor: 'transparent'
-                        };
-                    }));
-
-                    const holidayMap = {};
-                    data.holidays.forEach(row => holidayMap[row[0]] = row[1]);
-                    setCustomHolidays(holidayMap);
-
-                } catch (e) { console.error(e); } finally { if (!silent) setLoading(false); }
+                const silent = isSilent === true; if (!user?.token) return; if (!silent) setLoading(true);
+                try { const data = await callApi({ action: 'LIST', token: user.token }); setEvents(data.bookings.map(b => { const budgetColor = b.budget === '간호부' ? '#3b82f6' : b.budget === '총무팀' ? '#10b981' : b.budget === 'QI(적정진료관리팀)' ? '#f59e0b' : '#64748b'; return { id: b.id, title: `[${b.dept}] ${b.name}`, start: b.startTime, end: b.endTime, extendedProps: { ...b, colorCode: budgetColor }, backgroundColor: 'transparent', borderColor: 'transparent' }; })); const holidayMap = {}; (data.holidays || []).forEach(row => holidayMap[row[0]] = row[1]); setCustomHolidays(holidayMap); }
+                catch (e) { console.error(e); if (!silent) alert(e.message); } finally { if (!silent) setLoading(false); }
             };
 
-            const handleLogin = (e) => {
-                e.preventDefault();
-
-                const trimmedName = loginInput.name.trim();
-                const empNo = loginInput.empNo.trim().toUpperCase();
-
-                const isSuperAdmin = trimmedName.toUpperCase().includes("DNS") && empNo === "1606";
-
-                if (!isSuperAdmin) {
-                    if (empNo.length !== 5) {
-                    alert("사번은 반드시 5자리여야 합니다.");
-                    return;
-                }
-                
-                const empNoRegex = /^[0-9]{2}[A-Z0-9]{1}[0-9]{2}$/;
-                if (!empNoRegex.test(empNo)) {
-                    alert("사번 형식이 올바르지 않습니다.");
-                    return;
-                }
-
-                const yearPart = parseInt(empNo.substring(0, 2), 10);
-                const currentYearShort = new Date().getFullYear() % 100;
-                const isYearValid = (yearPart >= 83 && yearPart <= 99) || (yearPart >= 0 && yearPart <= currentYearShort);
-
-                if (!isYearValid) {
-                    alert(`유효하지 않은 사번입니다.`);
-                    return;
-                }
-            }
-
-                // 4. 이름/사번 누락 체크
-                if (!trimmedName || !empNo) {
-                    alert("이름과 사번을 정확히 입력해주세요.");
-                    return;
-                }
-
-                // 5. 로그인 처리
-                const loggedInUser = { name: trimmedName, empNo: empNo, isAdmin: isSuperAdmin };
-
-                setUser(loggedInUser);
-                sessionStorage.setItem('cardPortalUser', JSON.stringify(loggedInUser));
-                
-                if (!isSuperAdmin) {
-                    setShowInstruction(true);
-                }
-                
+            const handleLogin = async (e) => {
+                e.preventDefault(); const trimmedName = loginInput.name.trim(), empNo = loginInput.empNo.trim().toUpperCase(); if (!trimmedName || !empNo) return alert('이름과 사번을 정확히 입력해주세요.'); setLoading(true);
+                try { const data = await callApi({ action: 'LOGIN', name: trimmedName, empNo }); const loggedInUser = { ...data.user, token: data.token }; setUser(loggedInUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(loggedInUser)); if (!loggedInUser.isAdmin) setShowInstruction(true); }
+                catch (e) { alert(e.message); } finally { setLoading(false); }
             };
+
+            const handleAdminAuth = async () => { const pin = window.prompt('관리자 PIN을 입력해주세요.'); if (pin === null) return; const cleanPin = String(pin).replace(/[^0-9]/g, '').trim(); if (!cleanPin) return alert('관리자 PIN을 입력해주세요.'); setLoading(true); try { const data = await callApi({ action: 'ADMIN_AUTH', token: user.token, pin: cleanPin }); const upgradedUser = { ...user, ...data.user, token: user.token }; setUser(upgradedUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(upgradedUser)); showToast('관리자 인증이 완료되었습니다.'); await fetchBookings(true); } catch (e) { alert(e.message); } finally { setLoading(false); } };
 
             React.useEffect(() => { if (user) fetchBookings(); }, [user]);
 
@@ -515,7 +397,7 @@
                 if (calendarInstanceRef.current) return;
 
                     const calendar = new FullCalendar.Calendar(calendarContainerRef.current, {
-                        height: window.innerWidth < 640 ? 'auto' : '100%',
+                        height: '100%',
                         locale: 'ko',
                         selectable: true,
                         selectLongPressDelay: 0,
@@ -662,7 +544,7 @@
                                 setShowListModal(true);
                             } else {
                                 // PC 화면: 바로 상세 폼 띄우기
-                                openEventDetails(info.event.extendedProps, info.event.start, info.event.end);
+                                openBookingById(info.event.id, info.event.start, info.event.end);
                             }
                         },
                     });
@@ -868,60 +750,12 @@
                 setLoading(true);
                 try {
                     const actionType = formData.id ? "UPDATE" : "CREATE";
-                    const isOwnerOrAdmin = user.isAdmin || !selectedEvent || String(selectedEvent.empNo || "").replace(/^'/, "").trim() === String(user.empNo || "").trim();
-                    const finalEmpNo = isOwnerOrAdmin ? String(formData.empNo || "").trim() : String(selectedEvent.empNo || "").replace(/^'/, "").trim();
-                    const payload = {
-                        id: formData.id,
-                        dept: finalDept,
-                        name: formData.name,
-                        empNo: finalEmpNo,
-                        startTime: `${formData.startDate}T${formData.startTimePart}:00`,
-                        endTime: `${formData.endDate}T${formData.endTimePart}:00`,
-                        budget: finalBudget,
-                        purpose: formData.purpose,
-                        details: formData.details,
-                        contact: combinedContact
-                    };
-
-                    await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: actionType, ...payload }) });
-                    setLoading(false); // 성공 시 로딩 종료
-                    setShowForm(false);
-                    calendarInstanceRef.current?.unselect();
-
-                    const tempId = formData.id || "temp-" + Date.now();
-                    
-                    const budgetColor =
-                        payload.budget === '간호부' ? '#3b82f6' :
-                        payload.budget === '총무팀' ? '#10b981' :
-                        payload.budget === 'QI(적정진료관리팀)' ? '#f59e0b' :
-                        '#64748b';
-                    
-                    const newEvent = {
-                        id: tempId,
-                        title: `[${payload.dept}] ${payload.name}`,
-                        start: payload.startTime,
-                        end: payload.endTime,
-                    
-                        extendedProps: {
-                            ...payload,
-                            colorCode: budgetColor
-                        },
-                    
-                        backgroundColor: 'transparent',
-                        borderColor: 'transparent'
-                    };
-                    
-                    setEvents(prev =>
-                        formData.id
-                            ? prev.map(ev =>
-                                String(ev.id) === String(formData.id)
-                                    ? newEvent
-                                    : ev
-                            )
-                            : [...prev, newEvent]
-                    );
-                    fetchBookings(true);
-                    showToast("예약이 저장되었습니다.");
+                    const payload = { id: formData.id, dept: finalDept, startTime: `${formData.startDate}T${formData.startTimePart}:00`, endTime: `${formData.endDate}T${formData.endTimePart}:00`, budget: finalBudget, purpose: formData.purpose, details: formData.details, contact: combinedContact };
+                    const result = await callApi({ action: actionType, token: user.token, ...payload });
+                    setLoading(false); setShowForm(false); calendarInstanceRef.current?.unselect();
+                    const tempId = formData.id || result.id || "temp-" + Date.now(), budgetColor = payload.budget === '간호부' ? '#3b82f6' : payload.budget === '총무팀' ? '#10b981' : payload.budget === 'QI(적정진료관리팀)' ? '#f59e0b' : '#64748b';
+                    const newEvent = { id: tempId, title: `[${payload.dept}] ${user.name}`, start: payload.startTime, end: payload.endTime, extendedProps: { id: tempId, dept: payload.dept, name: user.name, startTime: payload.startTime, endTime: payload.endTime, budget: payload.budget, purpose: payload.purpose, isMine: true, canEdit: true, canViewContact: true, contactMasked: payload.contact.replace(/^(\d{2,3})-\d{3,4}-(\d{4})$/, '$1-****-$2'), colorCode: budgetColor }, backgroundColor: 'transparent', borderColor: 'transparent' };
+                    setEvents(prev => formData.id ? prev.map(ev => String(ev.id) === String(formData.id) ? newEvent : ev) : [...prev, newEvent]); fetchBookings(true); showToast("예약이 저장되었습니다.");
                 } catch (e) {
                     console.error("저장 중 에러 발생:", e);
                     alert("오류 발생");
@@ -930,32 +764,14 @@
             };
 
             const handleDelete = async () => {
-                if (!confirm("정말 이 예약을 취소하시겠습니까?")) return;
-                setLoading(true);
-                try {
-                    await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "DELETE", id: formData.id }) });
-                    setLoading(false); // 성공 시 로딩 종료
-                    setShowForm(false);
-                    calendarInstanceRef.current?.unselect();
-
-                    setEvents(prev => prev.filter(ev => String(ev.id) !== String(formData.id)));
-                    fetchBookings(true);
-                    showToast("예약이 취소되었습니다.");
-                } catch (e) {
-                    alert("오류 발생");
-                    setLoading(false); // 실패 시 로딩 종료
-                }
+                if (!confirm("정말 이 예약을 취소하시겠습니까?")) return; setLoading(true);
+                try { await callApi({ action: 'DELETE', token: user.token, id: formData.id }); setLoading(false); setShowForm(false); calendarInstanceRef.current?.unselect(); setEvents(prev => prev.filter(ev => String(ev.id) !== String(formData.id))); fetchBookings(true); showToast("예약이 취소되었습니다."); }
+                catch (e) { alert(e.message || "오류 발생"); setLoading(false); }
             };
 
-            const hasPermission = React.useMemo(() => {
-                if (!user) return false;
-                if (!selectedEvent) return true;
-                if (user.isAdmin) return true;
-                const eventEmpNo = String(selectedEvent.empNo || "").replace(/^'/, "").trim();
-                const userEmpNo = String(user.empNo || "").trim();
-                
-                return eventEmpNo === userEmpNo;
-            }, [user, selectedEvent]);
+            const hasPermission = React.useMemo(() => !selectedEvent || selectedEvent.canEdit === true, [selectedEvent]);
+
+            const handleLogout = async () => { const token = user?.token; try { if (token) await callApi({ action: 'LOGOUT', token }); } catch (e) {} finally { setUser(null); sessionStorage.removeItem('cardPortalUser'); setSelectedEvent(null); setShowForm(false); setShowListModal(false); setShowNotice(false); setShowMyBookings(false); } };
 
             if (!user) {
                 return (
@@ -987,7 +803,7 @@
                                         placeholder="사번 5자리 입력"
                                     />
                                 </div>
-                                <button type="submit" className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium py-3 rounded-xl shadow-lg shadow-blue-700/10 transition text-sm">시스템 접속</button>
+                                <button type="submit" disabled={loading} className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-slate-400 text-white font-medium py-3 rounded-xl shadow-lg shadow-blue-700/10 transition text-sm">{loading ? '접속 중...' : '시스템 접속'}</button>
                             </form>
                         </div>
                     </div>
@@ -996,7 +812,7 @@
 
             return (
                 // 화면 꽉 차게 flex 레이아웃 적용
-                <div className="min-h-dvh sm:h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-200 overflow-y-auto sm:overflow-hidden">
+                <div className="h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-200 overflow-hidden">
 
                     {/* 안내문구가 통합된 새로운 헤더 */}
                     <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0 shadow-sm transition-colors duration-200 z-10">
@@ -1016,6 +832,8 @@
                             </span>
 
                             <div className="flex items-center space-x-2">
+                                {user.canAdminAuth && !user.isAdmin && (<button onClick={handleAdminAuth} className="px-3 py-2 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-bold transition">관리자 인증</button>)}
+                                {user.isAdmin && (<span className="px-2.5 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold">관리자</span>)}
                                 <button
                                     onClick={() => setShowMyBookings(true)}
                                     className="relative flex items-center px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition"
@@ -1033,14 +851,7 @@
                                 </button>
 
                                 {/* 로그아웃: 텍스트 형태로 유지하여 실수 클릭 방지 */}
-                                <button onClick={() => {
-                                    setUser(null);
-                                    sessionStorage.removeItem('cardPortalUser');
-                                    setSelectedEvent(null);
-                                    setShowForm(false);
-                                    setShowListModal(false);
-                                    setShowNotice(false);
-                                }} className="px-2 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition">
+                                <button onClick={handleLogout} className="px-2 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition">
                                     로그아웃
                                 </button>
                             </div>
@@ -1048,7 +859,7 @@
                     </header>
 
                     {/* 화면을 꽉 채우는 새로운 달력 영역 */}
-                    <main className="flex-none sm:flex-1 w-full p-2 sm:p-4 pb-24 sm:pb-4 sm:min-h-0 flex flex-col relative">
+                    <main className="flex-1 w-full p-2 sm:p-4 pb-16 sm:pb-4 min-h-0 flex flex-col relative">
                         <div className="shrink-0 mb-2 sm:mb-3 space-y-2">
                         
                             {/* 현재 상태 */}
@@ -1146,12 +957,8 @@
                             </div>
                         
                         </div>
-                        <div className="flex-none sm:flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-auto sm:h-full relative transition-colors duration-200 overflow-visible sm:overflow-hidden">
-                            <div
-                                ref={calendarContainerRef}
-                                id="calendar"
-                                className="w-full h-auto sm:h-full"
-                            ></div>
+                        <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-full relative transition-colors duration-200 overflow-hidden">
+                            <div ref={calendarContainerRef} id="calendar" className="w-full h-full"></div>
                         </div>
 
                         {loading && (
@@ -1205,11 +1012,7 @@
                                                 onClick={() => {
                                                     setShowMyBookings(false);
                     
-                                                    openEventDetails(
-                                                        ev.extendedProps,
-                                                        new Date(ev.start),
-                                                        new Date(ev.end)
-                                                    );
+                                                    openBookingById(ev.id, new Date(ev.start), new Date(ev.end));
                                                 }}
                                                 className="w-full text-left px-5 py-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
                                             >
@@ -1273,7 +1076,7 @@
                                             : `${formatDate(ev.startObj)} ${formatTime(ev.startObj)} ~ ${formatDate(ev.endObj)} ${formatTime(ev.endObj)}`;
 
                                         return (
-                                            <div key={ev.id} onClick={() => openEventDetails(ev.extendedProps, ev.startObj, ev.endObj)} className="p-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-sm flex flex-col gap-1 transition-colors">
+                                            <div key={ev.id} onClick={() => openBookingById(ev.id, ev.startObj, ev.endObj)} className="p-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-sm flex flex-col gap-1 transition-colors">
                                                 <span className="font-semibold text-blue-700 dark:text-blue-400">{ev.title}</span>
                                                 <span className="text-slate-500 dark:text-slate-400 text-xs">{timeDisplay}</span>
                                             </div>
@@ -1379,11 +1182,11 @@
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">대여자 이름</label>
-                                            <input type="text" disabled={!hasPermission} required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" />
+                                            <input type="text" disabled required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">대여자 사번</label>
-                                            <input type="text" disabled={!hasPermission} required value={formData.empNo} onChange={e => setFormData({ ...formData, empNo: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" />
+                                            <input type="text" disabled required value={formData.empNo} onChange={e => setFormData({ ...formData, empNo: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" />
                                         </div>
                                     </div>
 
@@ -1450,23 +1253,7 @@
 
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">연락처 (휴대폰 번호)</label>
-                                        <div className="flex items-center space-x-2">
-                                            <select disabled={!hasPermission} value={phone1Select} onChange={e => setPhone1Select(e.target.value)} className="w-24 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors">
-                                                <option value="010">010</option>
-                                                <option value="011">011</option>
-                                                <option value="016">016</option>
-                                                <option value="기타">직접 입력</option>
-                                            </select>
-                                            <span className="text-slate-400 dark:text-slate-500">-</span>
-                                            <input type="text" disabled={!hasPermission} required maxLength="4" value={phone2} onChange={e => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" placeholder="" />
-                                            <span className="text-slate-400 dark:text-slate-500">-</span>
-                                            <input type="text" disabled={!hasPermission} required maxLength="4" value={phone3} onChange={e => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" placeholder="" />
-                                        </div>
-                                        {phone1Select === '기타' && (
-                                            <div className="mt-2">
-                                                <input type="text" disabled={!hasPermission} required maxLength="4" value={phone1Custom} onChange={e => setPhone1Custom(e.target.value.replace(/[^0-9]/g, ''))} className="w-24 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" placeholder="번호 입력" />
-                                            </div>
-                                        )}
+                                        {hasPermission ? (<><div className="flex items-center space-x-2"><select value={phone1Select} onChange={e => setPhone1Select(e.target.value)} className="w-24 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-blue-600 dark:focus:border-blue-500"><option value="010">010</option><option value="011">011</option><option value="016">016</option><option value="기타">직접 입력</option></select><span className="text-slate-400 dark:text-slate-500">-</span><input type="text" required maxLength="4" value={phone2} onChange={e => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600" /><span className="text-slate-400 dark:text-slate-500">-</span><input type="text" required maxLength="4" value={phone3} onChange={e => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600" /></div>{phone1Select === '기타' && <input type="text" required maxLength="4" value={phone1Custom} onChange={e => setPhone1Custom(e.target.value.replace(/[^0-9]/g, ''))} className="w-24 mt-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center" placeholder="번호 입력" />}</>) : (<div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3"><div className="flex items-center justify-between gap-3"><div><div className="text-sm font-semibold text-slate-700 dark:text-slate-200">{selectedEvent?.contactRevealed ? selectedEvent.contact : selectedEvent?.contactMasked || '연락처 비공개'}</div>{!selectedEvent?.contactRevealed && <div className="text-[11px] text-slate-400 mt-1">필요한 경우에만 연락처를 확인해 주세요.</div>}</div>{!selectedEvent?.contactRevealed && <button type="button" onClick={async () => { setLoading(true); try { const data = await callApi({ action: 'GET_CONTACT', token: user.token, id: selectedEvent.id }); setSelectedEvent(prev => ({ ...prev, contact: data.contact, contactRevealed: true })); showToast('연락처가 표시되었습니다.'); } catch (e) { alert(e.message); } finally { setLoading(false); } }} className="shrink-0 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition">연락처 보기</button>}</div></div>)}
                                     </div>
 
                                     <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-slate-700 mt-4">
@@ -1485,10 +1272,7 @@
                     const name = isHoliday ? "" : "임시공휴일";
                     setLoading(true);
                     try {
-                        await fetch(GOOGLE_SCRIPT_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: "TOGGLE_HOLIDAY", date: selectedSlot.startDate, name: name })
-                        });
+                        await callApi({ action: "TOGGLE_HOLIDAY", token: user.token, date: selectedSlot.startDate, name });
 
                         setTimeout(async () => {
                             await fetchBookings();
