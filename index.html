@@ -97,6 +97,18 @@
                 flex-wrap: wrap;
                 gap: 5px;
             }
+
+            .fc {
+                height: auto !important;
+            }
+        
+            .fc .fc-view-harness {
+                height: auto !important;
+            }
+        
+            .fc .fc-view-harness-active > .fc-view {
+                position: relative !important;
+            }
         }
 
         /* 다크모드 캘린더 전용 스타일 */
@@ -503,7 +515,7 @@
                 if (calendarInstanceRef.current) return;
 
                     const calendar = new FullCalendar.Calendar(calendarContainerRef.current, {
-                        height: '100%',
+                        height: window.innerWidth < 640 ? 'auto' : '100%',
                         locale: 'ko',
                         selectable: true,
                         selectLongPressDelay: 0,
@@ -984,7 +996,7 @@
 
             return (
                 // 화면 꽉 차게 flex 레이아웃 적용
-                <div className="h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-200 overflow-hidden">
+                <div className="min-h-dvh sm:h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-200 overflow-y-auto sm:overflow-hidden">
 
                     {/* 안내문구가 통합된 새로운 헤더 */}
                     <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0 shadow-sm transition-colors duration-200 z-10">
@@ -1036,7 +1048,7 @@
                     </header>
 
                     {/* 화면을 꽉 채우는 새로운 달력 영역 */}
-                    <main className="flex-1 w-full p-2 sm:p-4 pb-16 sm:pb-4 min-h-0 flex flex-col relative">
+                    <main className="flex-none sm:flex-1 w-full p-2 sm:p-4 pb-24 sm:pb-4 sm:min-h-0 flex flex-col relative">
                         <div className="shrink-0 mb-2 sm:mb-3 space-y-2">
                         
                             {/* 현재 상태 */}
@@ -1134,8 +1146,12 @@
                             </div>
                         
                         </div>
-                        <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-full relative transition-colors duration-200 overflow-hidden">
-                            <div ref={calendarContainerRef} id="calendar" className="w-full h-full"></div>
+                        <div className="flex-none sm:flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-auto sm:h-full relative transition-colors duration-200 overflow-visible sm:overflow-hidden">
+                            <div
+                                ref={calendarContainerRef}
+                                id="calendar"
+                                className="w-full h-auto sm:h-full"
+                            ></div>
                         </div>
 
                         {loading && (
