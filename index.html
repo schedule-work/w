@@ -387,8 +387,7 @@
                 catch (e) { alert(e.message); } finally { setLoading(false); }
             };
 
-            const handleAdminAuth = async () => { const pin = window.prompt('관리자 PIN을 입력해주세요.'); if (pin === null) return; const cleanPin = String(pin).replace(/[^0-9]/g, '').trim(); if (!cleanPin) return alert('관리자 PIN을 입력해주세요.'); setLoading(true); try { const data = await callApi({ action: 'ADMIN_AUTH', token: user.token, pin: cleanPin }); const upgradedUser = { ...user, ...data.user, token: user.token }; setUser(upgradedUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(upgradedUser)); showToast('관리자 인증이 완료되었습니다.'); await fetchBookings(true); } catch (e) { alert(e.message); } finally { setLoading(false); } };
-
+            const handleAdminAuth = async () => { const pin = window.prompt('관리자 PIN을 입력해주세요.'); if (pin === null) return; const cleanPin = String(pin).trim().toLowerCase(); if (!cleanPin) return alert('관리자 PIN을 입력해주세요.'); setLoading(true); try { const data = await callApi({ action: 'ADMIN_AUTH', token: user.token, pin: cleanPin }); const upgradedUser = { ...user, ...data.user, token: user.token }; setUser(upgradedUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(upgradedUser)); showToast('관리자 인증이 완료되었습니다.'); await fetchBookings(true); } catch (e) { alert(e.message); } finally { setLoading(false); } };
             React.useEffect(() => { if (user) fetchBookings(); }, [user]);
 
             React.useEffect(() => {
