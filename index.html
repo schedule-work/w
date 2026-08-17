@@ -14,42 +14,79 @@
     
     <style>
         :root {
-            --paper-bg: #fdfcf7; 
-            --ink-black: #111111;
+            --app-bg: #f4f7fb;
+            --surface: #ffffff;
+            --surface-muted: #eef3f8;
+            --line: #d8e1eb;
+            --ink: #172033;
+            --ink-muted: #64748b;
+            --navy: #173b63;
+            --blue: #2563eb;
+            --today: #fff4bf;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--paper-bg);
-            color: var(--ink-black);
-            height: 100vh;
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background-color: var(--app-bg);
+            color: var(--ink);
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        .font-editorial {
-            font-family: 'Playfair Display', serif;
+        .border-editorial {
+            border-color: var(--line);
         }
 
-        .border-editorial {
-            border-color: var(--ink-black);
+        .site-header {
+            background: var(--surface);
+            border-color: var(--line);
+        }
+
+        .brand-mark {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: grid;
+            place-items: center;
+            border-radius: 0.75rem;
+            background: var(--navy);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .site-title {
+            color: var(--ink);
+            letter-spacing: -0.04em;
+        }
+
+        .section-nav {
+            background: var(--surface);
+            border-color: var(--line);
         }
 
         .main-tab {
-            transition: all 0.2s ease;
+            transition: background-color 0.2s ease, color 0.2s ease;
             position: relative;
+            color: var(--ink-muted);
         }
         .main-tab[data-active="true"] {
-            background-color: var(--ink-black);
-            color: var(--paper-bg);
+            background-color: var(--navy);
+            color: white;
         }
         .main-tab[data-active="false"]:hover {
-            background-color: #f0eee1;
+            background-color: var(--surface-muted);
+            color: var(--navy);
         }
         .main-tab:focus-visible,
-        .sub-btn:focus-visible {
-            outline: 2px solid var(--ink-black);
+        .sub-btn:focus-visible,
+        #person-search:focus-visible,
+        #toggle-search:focus-visible,
+        #search-person:focus-visible,
+        #clear-person-search:focus-visible {
+            outline: 3px solid #f5c542;
             outline-offset: 2px;
         }
 
@@ -67,71 +104,106 @@
         .sub-btn {
             white-space: nowrap;
             position: relative;
-            padding: 0.25rem 0;
-            transition: color 0.2s;
+            padding: 0.45rem 0.75rem;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            color: var(--ink-muted);
+            transition: color 0.2s, background-color 0.2s, border-color 0.2s;
         }
         .sub-btn[data-active="true"] {
             font-weight: 600;
-        }
-        .sub-btn[data-active="true"]::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background-color: var(--ink-black);
+            color: var(--navy);
+            background: #e6eef8;
+            border-color: #b8cbe0;
         }
 
-        .marquee-container {
-            background-color: var(--ink-black);
-            color: var(--paper-bg);
+        .sub-btn:hover {
+            color: var(--navy);
+            background: var(--surface-muted);
+        }
+
+        .search-panel {
+            max-height: min(42vh, 420px);
+            overflow-y: auto;
+            background: var(--surface);
+        }
+
+        .search-panel h2 {
+            color: var(--navy);
+        }
+
+        .schedule-shell {
+            min-height: 0;
+            flex: 1;
+            margin: 1rem;
+            margin-top: 0;
             overflow: hidden;
-            white-space: nowrap;
+            border: 1px solid var(--line);
+            border-radius: 0.75rem;
+            background: var(--surface);
+            box-shadow: 0 4px 16px rgba(23, 59, 99, 0.06);
         }
-        .marquee-content {
-            display: inline-block;
-            animation: marquee 30s linear infinite;
+
+        .site-footer {
+            color: var(--ink-muted);
+            border-color: var(--line);
+            background: var(--surface);
         }
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
+
         @media (prefers-reduced-motion: reduce) {
-            .marquee-content,
             .animate-pulse {
                 animation: none;
             }
         }
-        .search-panel {
-            max-height: min(42vh, 420px);
-            overflow-y: auto;
+
+        @media (max-width: 640px) {
+            .site-header {
+                padding: 0.85rem 1rem;
+            }
+            .site-title {
+                font-size: 1.1rem;
+            }
+            .section-nav > div:first-child {
+                width: 100%;
+            }
+            .main-tab {
+                flex: 1;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.8rem;
+            }
+            .section-nav > div:last-child {
+                padding: 0.5rem 0.75rem;
+            }
+            .search-panel {
+                max-height: 48vh;
+                padding: 0.75rem;
+            }
+            .schedule-shell {
+                margin: 0.5rem;
+                margin-top: 0;
+                border-radius: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <header class="border-b border-editorial flex flex-col sm:flex-row justify-between items-center sm:items-end px-6 py-4 shrink-0">
-        <div class="text-center sm:text-left mb-2 sm:mb-0">
-            <h1 class="font-editorial text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight uppercase leading-none">
-                Shift Schedule
-            </h1>
-            <p class="text-[10px] sm:text-xs tracking-[0.2em] uppercase mt-2 text-gray-600 font-medium">
-                Korea University Guro Hospital • Department of Nursing Service
-            </p>
+    <header class="site-header border-b flex items-center justify-between px-6 py-3 shrink-0">
+        <div class="flex min-w-0 items-center gap-3">
+            <div class="brand-mark" aria-hidden="true">KU</div>
+            <div class="min-w-0">
+                <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Korea University Guro Hospital</p>
+                <h1 class="site-title truncate text-xl font-bold sm:text-2xl">간호부 근무표</h1>
+            </div>
         </div>
-        <div class="text-center sm:text-right flex flex-col justify-end">
-            <p class="text-[10px] font-medium tracking-widest uppercase border-b border-editorial pb-1 mb-1">
-                임상지원간호팀
-            </p>
-            <p class="text-[10px] text-gray-500 tracking-wider">
-                VOL. 2026
-            </p>
+        <div class="hidden text-right sm:block">
+            <p class="text-xs font-semibold text-slate-700">Department of Nursing Service</p>
+            <p class="mt-1 text-[11px] text-slate-500">SHIFT SCHEDULE · 2026</p>
         </div>
     </header>
 
-    <nav class="border-b border-editorial flex flex-col md:flex-row shrink-0 bg-white">
-        <div class="flex border-b md:border-b-0 md:border-r border-editorial shrink-0">
+    <nav class="section-nav border-b flex flex-col md:flex-row shrink-0" aria-label="근무표 구분">
+        <div class="flex shrink-0 border-b border-editorial md:border-b-0 md:border-r">
             <button id="btn-group1" role="tab" aria-selected="false" aria-controls="group1-sub" class="main-tab px-6 py-3 text-sm font-semibold tracking-wider" onclick="toggleGroup('group1', this)">
                 진료지원
             </button>
@@ -140,14 +212,14 @@
             </button>
         </div>
         
-        <div class="flex-1 flex items-center px-6 py-2 overflow-hidden bg-[#faf9f5]">
+        <div class="flex-1 flex items-center overflow-hidden bg-slate-50 px-6 py-2">
             <div id="group1-sub" class="sub-menu-container gap-6 hidden w-full"></div>
             <div id="group2-sub" class="sub-menu-container gap-6 hidden w-full"></div>
         </div>
     </nav>
 
     <main class="flex flex-1 w-full min-h-0 flex-col relative z-0 bg-white">
-        <section id="search-panel" class="search-panel relative shrink-0 border-b border-editorial bg-[#fdfcf7] px-4 py-3" aria-labelledby="search-title">
+        <section id="search-panel" class="search-panel relative shrink-0 border-b border-editorial px-4 py-3" aria-labelledby="search-title">
             <div class="flex items-center justify-between gap-3">
                 <h2 id="search-title" class="font-semibold text-sm whitespace-nowrap">개인 근무표 검색</h2>
                 <button id="toggle-search" type="button" class="border border-gray-400 px-3 py-1.5 text-xs hover:border-black" aria-expanded="true" aria-controls="search-content">검색창 숨기기</button>
@@ -156,9 +228,9 @@
                 <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <div class="flex flex-1 gap-2">
                         <label for="person-search" class="sr-only">이름 또는 사번</label>
-                        <input id="person-search" type="search" class="min-w-0 flex-1 border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-black" placeholder="이름 또는 사번 입력" autocomplete="off">
-                        <button id="search-person" type="button" class="border border-black bg-black px-4 py-2 text-sm text-white hover:bg-white hover:text-black">검색</button>
-                        <button id="clear-person-search" type="button" class="border border-gray-400 px-3 py-2 text-sm hover:border-black">초기화</button>
+                        <input id="person-search" type="search" class="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" placeholder="이름 또는 사번 입력" autocomplete="off">
+                        <button id="search-person" type="button" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">검색</button>
+                        <button id="clear-person-search" type="button" class="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:border-slate-500">초기화</button>
                     </div>
                 </div>
                 <p id="search-status" class="mt-2 text-xs text-gray-600" role="status" aria-live="polite">시트를 선택한 뒤 이름 또는 사번을 검색하세요.</p>
@@ -177,28 +249,13 @@
                 <button id="retry-sheet" type="button" class="mt-4 border border-black px-4 py-2 text-sm hover:bg-black hover:text-white">다시 시도</button>
             </div>
         </div>
-        <iframe id="sheet-frame" class="relative min-h-0 flex-1 w-full border-0" title="근무표" src=""></iframe>
+        <div class="schedule-shell flex">
+            <iframe id="sheet-frame" class="relative min-h-0 flex-1 w-full border-0" title="근무표" src=""></iframe>
+        </div>
     </main>
 
-    <footer class="marquee-container py-1.5 shrink-0 text-[10px] tracking-[0.2em] uppercase font-light">
-        <div class="marquee-content">
-            <span class="mx-6">KOREA UNIVERSITY GURO HOSPITAL</span>
-            <span class="mx-6 text-gray-500">|</span>
-            <span class="mx-6">KUMC</span>
-            <span class="mx-6 text-gray-500">|</span>
-            <span class="mx-6">Department of Nursing Service</span>
-            <span class="mx-6 text-gray-500">|</span>
-            <span class="mx-6">Shift Schedule</span>
-            <span class="mx-6 text-gray-500">|</span>
-            <span class="mx-6">KOREA UNIVERSITY GURO HOSPITAL</span>
-            <span class="mx-6 text-gray-500">|</span>
-            <span class="mx-6">KUMC</span>
-            <span class="mx-6 text-gray-500">|</span>
-            <span class="mx-6">Department of Nursing Service</span>
-            <span class="mx-6 text-gray-500">|</span>
-            <span class="mx-6">Shift Schedule</span>
-            <span class="mx-6 text-gray-500">|</span>
-        </div>
+    <footer class="site-footer border-t px-6 py-2 text-center text-[10px] tracking-wide sm:text-left">
+        고려대학교 구로병원 · 간호부 근무표
     </footer>
 
     <script>
