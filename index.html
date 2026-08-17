@@ -196,12 +196,17 @@
         function App() {
             const [user, setUser] = React.useState(() => { const saved = sessionStorage.getItem('cardPortalUser'); if (!saved) return null; try { const parsed = JSON.parse(saved); return parsed?.token ? parsed : null; } catch (e) { return null; } });
             const [loginInput, setLoginInput] = React.useState({ name: '', empNo: '' });
+            
+            // 상태값 관리
             const [events, setEvents] = React.useState([]);
+            const [isFetchingStatus, setIsFetchingStatus] = React.useState(true); // ⭐ 상태 조회 중 표시
             const [customHolidays, setCustomHolidays] = React.useState({});
             const customHolidaysRef = React.useRef(customHolidays);
+            
             React.useEffect(() => {
                 customHolidaysRef.current = customHolidays;
             }, [customHolidays]);
+
             const getHolidayName = (dateObj) => {
                 const dateStr = [
                     dateObj.getFullYear(),
@@ -209,23 +214,22 @@
                     String(dateObj.getDate()).padStart(2, '0')
                 ].join('-');
 
-            if (customHolidaysRef.current && customHolidaysRef.current[dateStr]) {
-                return customHolidaysRef.current[dateStr];
-            }
-
-            if (dateObj.getMonth() === 6 && dateObj.getDate() === 17) return "제헌절";
-            if (hd) {
-                const res = hd.isHoliday(dateObj);
-                if (res && Array.isArray(res)) {
-                    const publicH = res.find(h => h.type === 'public' || h.type === 'bank');
-                    if (publicH) return publicH.name;
+                if (customHolidaysRef.current && customHolidaysRef.current[dateStr]) {
+                    return customHolidaysRef.current[dateStr];
                 }
-            }
-            return FALLBACK_HOLIDAYS[dateStr] || null;
-        };
+
+                if (dateObj.getMonth() === 6 && dateObj.getDate() === 17) return "제헌절";
+                if (hd) {
+                    const res = hd.isHoliday(dateObj);
+                    if (res && Array.isArray(res)) {
+                        const publicH = res.find(h => h.type === 'public' || h.type === 'bank');
+                        if (publicH) return publicH.name;
+                    }
+                }
+                return FALLBACK_HOLIDAYS[dateStr] || null;
+            };
             
             const [loading, setLoading] = React.useState(false);
-
             const [showListModal, setShowListModal] = React.useState(false);
             const [selectedDateReservations, setSelectedDateReservations] = React.useState([]);
 
@@ -262,96 +266,63 @@
                 id: '', name: '', empNo: '', startDate: '', startTimePart: '', endDate: '', endTimePart: '', purpose: '', details: ''
             });
 
-            // 내 예약 Modal
             const [showMyBookings, setShowMyBookings] = React.useState(false);
-            
-            // 예산 필터
             const [budgetFilter, setBudgetFilter] = React.useState('전체');
-            
-            // Toast
             const [toast, setToast] = React.useState(null);
-            
-            // 현재 시간 - 카드 사용 상태를 자동 갱신하기 위해 사용
             const [currentTime, setCurrentTime] = React.useState(new Date());
             
             React.useEffect(() => {
                 const timer = setInterval(() => {
                     setCurrentTime(new Date());
                 }, 60000);
-            
                 return () => clearInterval(timer);
             }, []);
             
-            
-            // ============================================================
-            // ⭐ Toast 표시 함수
-            // ============================================================
             const showToast = (message, type = 'success') => {
                 setToast({ message, type });
-            
-                setTimeout(() => {
-                    setToast(null);
-                }, 2500);
+                setTimeout(() => setToast(null), 2500);
             };
             
-            
-            // ============================================================
-            // ⭐ 로그인 사용자의 향후 예약
-            // ============================================================
             const myBookings = React.useMemo(() => events.filter(ev => ev.extendedProps?.isMine === true && new Date(ev.end) >= currentTime).sort((a, b) => new Date(a.start) - new Date(b.start)), [events, currentTime]);
 
-
-            // ============================================================
-            // ⭐ 현재 사용 중인 예약
-            // ============================================================
             const currentBooking = React.useMemo(() => {
                 const now = currentTime.getTime();
-            
                 return events.find(ev => {
                     const start = new Date(ev.start).getTime();
                     const end = new Date(ev.end).getTime();
-            
                     return start <= now && now < end;
                 }) || null;
-            
             }, [events, currentTime]);
             
-            
-            // ============================================================
-            // ⭐ 앞으로 가장 가까운 예약
-            // ============================================================
             const nextBooking = React.useMemo(() => {
                 const now = currentTime.getTime();
-            
                 return events
-                    .filter(ev =>
-                        new Date(ev.start).getTime() > now
-                    )
-                    .sort((a, b) =>
-                        new Date(a.start) - new Date(b.start)
-                    )[0] || null;
-            
+                    .filter(ev => new Date(ev.start).getTime() > now)
+                    .sort((a, b) => new Date(a.start) - new Date(b.start))[0] || null;
             }, [events, currentTime]);
             
-            
-            // ============================================================
-            // ⭐ 표시용 날짜 / 시간 함수
-            // ============================================================
             const formatShortDate = (dateValue) => {
                 const d = new Date(dateValue);
-            
                 return `${d.getMonth() + 1}/${d.getDate()}`;
             };
             
             const formatClock = (dateValue) => {
                 const d = new Date(dateValue);
-            
-                return `${String(d.getHours()).padStart(2, '0')}:${String(
-                    d.getMinutes()
-                ).padStart(2, '0')}`;
+                return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
             };
                         
-            const callApi = async (payload) => { const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }); const data = await response.json(); if (!data.success) { if (data.code === 'UNAUTHORIZED') { sessionStorage.removeItem('cardPortalUser'); setUser(null); } throw new Error(data.message || '요청 처리 중 오류가 발생했습니다.'); } return data; };
+            const callApi = async (payload) => { 
+                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }); 
+                const data = await response.json(); 
+                if (!data.success) { 
+                    if (data.code === 'UNAUTHORIZED') { 
+                        sessionStorage.removeItem('cardPortalUser'); 
+                        setUser(null); 
+                    } 
+                    throw new Error(data.message || '요청 처리 중 오류가 발생했습니다.'); 
+                } 
+                return data; 
+            };
 
             const openBookingById = async (id, startObj, endObj) => {
                 setLoading(true);
@@ -366,20 +337,15 @@
                 } catch (e) { alert(e.message); } finally { setLoading(false); }
             };
 
-            const startRangeStr = "2026-05-01";
-            const maxDate = new Date(2026, 4, 1);
-            maxDate.setMonth(maxDate.getMonth() + 2);
-            const maxDateStr = [maxDate.getFullYear(), String(maxDate.getMonth() + 1).padStart(2, '0'), String(maxDate.getDate()).padStart(2, '0')].join('-');
-
             React.useEffect(() => {
                 eventsRef.current = events;
             }, [events]);
 
+            // ⭐ fetchBookings 로직 완벽 연동
             const fetchBookings = async (isSilent = false) => {
                 const silent = isSilent === true; 
                 if (!silent) setLoading(true);
                 try { 
-                    // 비로그인 상태에서도 LIST 액션 호출을 위해 token 조건부 처리
                     const payload = { action: 'LIST' };
                     if (user?.token) payload.token = user.token;
                     
@@ -395,184 +361,185 @@
                     console.error(e); 
                     if (!silent) alert(e.message); 
                 } finally { 
-                    if (!silent) setLoading(false); 
+                    if (!silent) setLoading(false);
+                    setIsFetchingStatus(false);
                 }
             };
             
-            // 앱이 처음 켜질 때 (비로그인 상태) 백그라운드에서 데이터를 가져오도록 수정
+            // ⭐ 비로그인 앱 켜질때 호출
             React.useEffect(() => { 
                 fetchBookings(true); 
             }, []); 
             
-            // 로그인 성공 시 한번 더 갱신 (선택사항)
+            // ⭐ 로그인 했을때 한번 더 호출
             React.useEffect(() => { 
                 if (user) fetchBookings(true); 
             }, [user]);
+
+            const handleLogin = async (e) => {
+                e.preventDefault(); const trimmedName = loginInput.name.trim(), empNo = loginInput.empNo.trim().toUpperCase(); if (!trimmedName || !empNo) return alert('이름과 사번을 정확히 입력해주세요.'); setLoading(true);
+                try { const data = await callApi({ action: 'LOGIN', name: trimmedName, empNo }); const loggedInUser = { ...data.user, token: data.token }; setUser(loggedInUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(loggedInUser)); if (!loggedInUser.isAdmin) setShowInstruction(true); }
+                catch (e) { alert(e.message); } finally { setLoading(false); }
+            };
+
+            const handleAdminAuth = async () => { const pin = window.prompt('관리자 PIN을 입력해주세요.'); if (pin === null) return; const cleanPin = String(pin).trim().toLowerCase(); if (!cleanPin) return alert('관리자 PIN을 입력해주세요.'); setLoading(true); try { const data = await callApi({ action: 'ADMIN_AUTH', token: user.token, pin: cleanPin }); const upgradedUser = { ...user, ...data.user, token: user.token }; setUser(upgradedUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(upgradedUser)); showToast('관리자 인증이 완료되었습니다.'); await fetchBookings(true); } catch (e) { alert(e.message); } finally { setLoading(false); } };
 
             React.useEffect(() => {
                 if (!user) return;
                 if (!calendarContainerRef.current) return;
                 if (calendarInstanceRef.current) return;
 
-                    const calendar = new FullCalendar.Calendar(calendarContainerRef.current, {
-                        height: '100%',
-                        locale: 'ko',
-                        selectable: true,
-                        selectLongPressDelay: 0,
-                        touchLongPressDelay: 0,
-                        allDaySlot: false,
-                        slotMinTime: '08:30:00',
-                        slotMaxTime: '17:30:00',
-                        validRange: { start: '2026-05-01' },
+                const calendar = new FullCalendar.Calendar(calendarContainerRef.current, {
+                    height: '100%',
+                    locale: 'ko',
+                    selectable: true,
+                    selectLongPressDelay: 0,
+                    touchLongPressDelay: 0,
+                    allDaySlot: false,
+                    slotMinTime: '08:30:00',
+                    slotMaxTime: '17:30:00',
+                    validRange: { start: '2026-05-01' },
 
-                        headerToolbar: {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridDay'
-                        },
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridDay'
+                    },
 
-                        dayCellClassNames: function (arg) {
-                            if (getHolidayName(arg.date)) return ['holiday-day'];
-                            return [];
-                        },
+                    dayCellClassNames: function (arg) {
+                        if (getHolidayName(arg.date)) return ['holiday-day'];
+                        return [];
+                    },
 
-                        dayCellContent: function (arg) {
-                            const dayNumber = arg.dayNumberText.replace('일', '');
-                            const holidayName = getHolidayName(arg.date);
-                            if (holidayName && arg.view.type === 'dayGridMonth') {
-                                return { html: `<div class="flex flex-col items-center"><span>${dayNumber}</span><span class="holiday-text">${holidayName}</span></div>` };
-                            }
-                            return { html: `<span>${dayNumber}</span>` };
-                        },
+                    dayCellContent: function (arg) {
+                        const dayNumber = arg.dayNumberText.replace('일', '');
+                        const holidayName = getHolidayName(arg.date);
+                        if (holidayName && arg.view.type === 'dayGridMonth') {
+                            return { html: `<div class="flex flex-col items-center"><span>${dayNumber}</span><span class="holiday-text">${holidayName}</span></div>` };
+                        }
+                        return { html: `<span>${dayNumber}</span>` };
+                    },
 
-                        eventContent: function (arg) {
-                            const start = new Date(arg.event.start);
-                            const end = new Date(arg.event.end);
-                            const getFormat = (d) => {
-                                let h = d.getHours();
-                                let m = d.getMinutes();
-                                const ampm = h < 12 ? 'A' : 'P';
-                                if (h > 12) h -= 12;
-                                if (h === 0) h = 12;
-                                const mStr = m === 0 ? '' : m;
-                                return `${h}${ampm}${mStr}`;
-                            };
-                            const timeStr = `${getFormat(start)}~${getFormat(end)}`;
-                            const dept = arg.event.title.split(']')[0] + ']';
-                            const evColor = arg.event.extendedProps.colorCode || '#64748b';
-                            return { 
-                                html: `<div style="border-left: 4px solid ${evColor}; background-color: ${evColor}1A; padding: 2px 6px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem; color: var(--fc-neutral-text-color, #333);">
-                                    <b style="color: ${evColor};">${timeStr}</b> ${dept}
-                                </div>` 
-                            };
-                        },
+                    eventContent: function (arg) {
+                        const start = new Date(arg.event.start);
+                        const end = new Date(arg.event.end);
+                        const getFormat = (d) => {
+                            let h = d.getHours();
+                            let m = d.getMinutes();
+                            const ampm = h < 12 ? 'A' : 'P';
+                            if (h > 12) h -= 12;
+                            if (h === 0) h = 12;
+                            const mStr = m === 0 ? '' : m;
+                            return `${h}${ampm}${mStr}`;
+                        };
+                        const timeStr = `${getFormat(start)}~${getFormat(end)}`;
+                        const dept = arg.event.title.split(']')[0] + ']';
+                        const evColor = arg.event.extendedProps.colorCode || '#64748b';
+                        return { 
+                            html: `<div style="border-left: 4px solid ${evColor}; background-color: ${evColor}1A; padding: 2px 6px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem; color: var(--fc-neutral-text-color, #333);">
+                                <b style="color: ${evColor};">${timeStr}</b> ${dept}
+                            </div>` 
+                        };
+                    },
 
-                        unselect: function () {
-                        },
+                    unselect: function () {},
 
-                        select: function (info) {
-                            const calendar = info.view.calendar;
-                            const currentSelectedStr = info.startStr;
+                    select: function (info) {
+                        const calendar = info.view.calendar;
+                        const currentSelectedStr = info.startStr;
 
-                            // 1. 첫 번째 클릭: 날짜 선택 (파란 테두리 표시)
-                            if (lastSelectedRef.current !== currentSelectedStr) {
-                                lastSelectedRef.current = currentSelectedStr;
-                                return;
-                            }
+                        if (lastSelectedRef.current !== currentSelectedStr) {
+                            lastSelectedRef.current = currentSelectedStr;
+                            return;
+                        }
 
-                            // 2. 두 번째 클릭: 동작 수행 (팝업 또는 폼 열기)
-                            lastSelectedRef.current = null; // 초기화
+                        lastSelectedRef.current = null;
 
-                            // 유효성 검사 (과거/미래 날짜)
-                            const today = new Date(); today.setHours(0, 0, 0, 0);
-                            const maxSelectDate = new Date(); maxSelectDate.setMonth(maxSelectDate.getMonth() + 2);
-                            const selectStart = new Date(info.startStr + "T00:00:00");
+                        const today = new Date(); today.setHours(0, 0, 0, 0);
+                        const maxSelectDate = new Date(); maxSelectDate.setMonth(maxSelectDate.getMonth() + 2);
+                        const selectStart = new Date(info.startStr + "T00:00:00");
 
-                            if (!user.isAdmin) {
-                                if (selectStart < today) {
-                                    alert("⚠️ 지난 날짜는 예약할 수 없습니다.");
-                                    calendarInstanceRef.current.unselect()
-                                    lastSelectedRef.current = null;
-                                    return;
-                                }
-                                if (selectStart > maxSelectDate) {
-                                    alert("⚠️ 예약은 2개월 이내의 날짜만 신청 가능합니다.");
-                                    calendarInstanceRef.current.unselect()
-                                    lastSelectedRef.current = null;
-                                    return;
-                                }
-                            }
-
-                            if (!isAvailableDate(info.startStr.split('T')[0])) {
-                                alert("⚠️ 주말 및 공휴일은 예약할 수 없습니다.");
+                        if (!user.isAdmin) {
+                            if (selectStart < today) {
+                                alert("⚠️ 지난 날짜는 예약할 수 없습니다.");
                                 calendarInstanceRef.current.unselect();
                                 lastSelectedRef.current = null;
                                 return;
                             }
-
-                            lastSelectedRef.current = null;
-
-                            let sDate = info.startStr.split('T')[0];
-                            let eDate = (info.endStr && info.endStr.length === 10)
-                                ? new Date(new Date(info.endStr).getTime() - 86400000).toISOString().split('T')[0]
-                                : info.endStr.split('T')[0];
-
-                            setSelectedSlot({ startDate: sDate, endDate: eDate });
-
-                            if (window.innerWidth < 640) {
-                                const allFcEvents = calendar.getEvents();
-                                const clickedTime = new Date(sDate + "T00:00:00").getTime();
-                                const nextDayTime = clickedTime + (24 * 60 * 60 * 1000);
-
-                                const dayEvents = allFcEvents.filter(ev => {
-                                    return (ev.start.getTime() < nextDayTime) && (ev.end.getTime() > clickedTime);
-                                }).map(ev => ({
-                                    id: ev.id, title: ev.title, startObj: ev.start, endObj: ev.end, extendedProps: ev.extendedProps
-                                }));
-
-                                setSelectedDateReservations(dayEvents);
-                                setShowListModal(true);
-                            } else {
-                                setSelectedEvent(null);
-                                setShowNotice(true);
+                            if (selectStart > maxSelectDate) {
+                                alert("⚠️ 예약은 2개월 이내의 날짜만 신청 가능합니다.");
+                                calendarInstanceRef.current.unselect();
+                                lastSelectedRef.current = null;
+                                return;
                             }
+                        }
 
+                        if (!isAvailableDate(info.startStr.split('T')[0])) {
+                            alert("⚠️ 주말 및 공휴일은 예약할 수 없습니다.");
                             calendarInstanceRef.current.unselect();
-                        },
-                        eventClick: function (info) {
-                            if (window.innerWidth < 640) {
-                                // 모바일 화면: 즉시 예약 리스트 팝업 띄우기
-                                const calendar = info.view.calendar;
-                                const evStart = info.event.start;
-                                const sDate = evStart.getFullYear() + '-' + String(evStart.getMonth() + 1).padStart(2, '0') + '-' + String(evStart.getDate()).padStart(2, '0');
+                            lastSelectedRef.current = null;
+                            return;
+                        }
 
-                                setSelectedSlot({ startDate: sDate, endDate: sDate });
+                        let sDate = info.startStr.split('T')[0];
+                        let eDate = (info.endStr && info.endStr.length === 10)
+                            ? new Date(new Date(info.endStr).getTime() - 86400000).toISOString().split('T')[0]
+                            : info.endStr.split('T')[0];
 
-                                const allFcEvents = calendar.getEvents();
-                                const clickedTime = new Date(sDate + "T00:00:00").getTime();
-                                const nextDayTime = clickedTime + (24 * 60 * 60 * 1000);
+                        setSelectedSlot({ startDate: sDate, endDate: eDate });
 
-                                const dayEvents = allFcEvents.filter(ev => {
-                                    return (ev.start.getTime() < nextDayTime) && (ev.end.getTime() > clickedTime);
-                                }).map(ev => ({
-                                    id: ev.id, title: ev.title, startObj: ev.start, endObj: ev.end, extendedProps: ev.extendedProps
-                                }));
+                        if (window.innerWidth < 640) {
+                            const allFcEvents = calendar.getEvents();
+                            const clickedTime = new Date(sDate + "T00:00:00").getTime();
+                            const nextDayTime = clickedTime + (24 * 60 * 60 * 1000);
 
-                                setSelectedDateReservations(dayEvents);
-                                setShowListModal(true);
-                            } else {
-                                // PC 화면: 바로 상세 폼 띄우기
-                                openBookingById(info.event.id, info.event.start, info.event.end);
-                            }
-                        },
-                    });
+                            const dayEvents = allFcEvents.filter(ev => {
+                                return (ev.start.getTime() < nextDayTime) && (ev.end.getTime() > clickedTime);
+                            }).map(ev => ({
+                                id: ev.id, title: ev.title, startObj: ev.start, endObj: ev.end, extendedProps: ev.extendedProps
+                            }));
 
-                    calendar.render();
-                    calendarInstanceRef.current = calendar;
+                            setSelectedDateReservations(dayEvents);
+                            setShowListModal(true);
+                        } else {
+                            setSelectedEvent(null);
+                            setShowNotice(true);
+                        }
 
-                    setTimeout(() => {
-                        calendar.updateSize();
-                    }, 100);
+                        calendarInstanceRef.current.unselect();
+                    },
+                    eventClick: function (info) {
+                        if (window.innerWidth < 640) {
+                            const calendar = info.view.calendar;
+                            const evStart = info.event.start;
+                            const sDate = evStart.getFullYear() + '-' + String(evStart.getMonth() + 1).padStart(2, '0') + '-' + String(evStart.getDate()).padStart(2, '0');
+
+                            setSelectedSlot({ startDate: sDate, endDate: sDate });
+
+                            const allFcEvents = calendar.getEvents();
+                            const clickedTime = new Date(sDate + "T00:00:00").getTime();
+                            const nextDayTime = clickedTime + (24 * 60 * 60 * 1000);
+
+                            const dayEvents = allFcEvents.filter(ev => {
+                                return (ev.start.getTime() < nextDayTime) && (ev.end.getTime() > clickedTime);
+                            }).map(ev => ({
+                                id: ev.id, title: ev.title, startObj: ev.start, endObj: ev.end, extendedProps: ev.extendedProps
+                            }));
+
+                            setSelectedDateReservations(dayEvents);
+                            setShowListModal(true);
+                        } else {
+                            openBookingById(info.event.id, info.event.start, info.event.end);
+                        }
+                    },
+                });
+
+                calendar.render();
+                calendarInstanceRef.current = calendar;
+
+                setTimeout(() => {
+                    calendar.updateSize();
+                }, 100);
 
                 return () => {
                     if (calendarInstanceRef.current) {
@@ -590,15 +557,9 @@
                 if (budgetFilter !== '전체') {
                     visibleEvents = events.filter(ev => {
                         const budget = ev.extendedProps?.budget || '';
-            
                         if (budgetFilter === '기타') {
-                            return ![
-                                '간호부',
-                                'QI(적정진료관리팀)',
-                                '총무팀'
-                            ].includes(budget);
+                            return !['간호부', 'QI(적정진료관리팀)', '총무팀'].includes(budget);
                         }
-            
                         return budget === budgetFilter;
                     });
                 }
@@ -610,7 +571,6 @@
 
             React.useEffect(() => {
                 if (calendarInstanceRef.current) {
-
                     calendarInstanceRef.current.setOption('dayCellClassNames', function (arg) {
                         const yyyy = arg.date.getFullYear();
                         const mm = String(arg.date.getMonth() + 1).padStart(2, '0');
@@ -630,7 +590,6 @@
                         const dd = String(arg.date.getDate()).padStart(2, '0');
                         const dateStr = `${yyyy}-${mm}-${dd}`;
 
-                        // Ref 타이밍 문제를 방지하기 위해 최신 상태값에서 직접 공휴일 이름을 가져옴
                         const holidayName = customHolidays[dateStr] || getHolidayName(arg.date);
 
                         if (holidayName && arg.view.type === 'dayGridMonth') {
@@ -639,7 +598,6 @@
                         return { html: `<span>${dayNumber}</span>` };
                     });
                     
-                    // 3. 설정을 마친 후 달력을 즉시 리렌더링
                     calendarInstanceRef.current.render();
                 }
             }, [customHolidays]);
@@ -694,24 +652,16 @@
                     maxBookingDate.setHours(23, 59, 59, 999);
                     maxBookingDate.setMonth(maxBookingDate.getMonth() + 2);
                 
-                    const startDateOnly =
-                        new Date(`${formData.startDate}T00:00:00`);
-                
-                    const endDateOnly =
-                        new Date(`${formData.endDate}T00:00:00`);
+                    const startDateOnly = new Date(`${formData.startDate}T00:00:00`);
+                    const endDateOnly = new Date(`${formData.endDate}T00:00:00`);
                 
                     if (startDateOnly < today) {
                         return alert("지난 날짜는 예약할 수 없습니다.");
                     }
-                
                     if (endDateOnly < today) {
                         return alert("지난 날짜는 반납일로 선택할 수 없습니다.");
                     }
-                
-                    if (
-                        startDateOnly > maxBookingDate ||
-                        endDateOnly > maxBookingDate
-                    ) {
+                    if (startDateOnly > maxBookingDate || endDateOnly > maxBookingDate) {
                         return alert("예약은 신청일 기준 2개월 이내에서만 가능합니다.");
                     }
                 }
@@ -746,10 +696,10 @@
                     tempDate.setDate(tempDate.getDate() + 1);
                 }
 
-                    if (!user.isAdmin && validDaysCount > 3) {
-                        alert("원활한 카드 사용을 위해 장기 예약은 최대 3일(영업일 기준)까지만 가능합니다.");
-                        return;
-                    }
+                if (!user.isAdmin && validDaysCount > 3) {
+                    alert("원활한 카드 사용을 위해 장기 예약은 최대 3일(영업일 기준)까지만 가능합니다.");
+                    return;
+                }
 
                 const isOverlap = events.some(ev => {
                     if (formData.id && String(ev.id) === String(formData.id)) return false;
@@ -777,7 +727,7 @@
                 } catch (e) {
                     console.error("저장 중 에러 발생:", e);
                     alert("오류 발생");
-                    setLoading(false); // 실패 시 로딩 종료
+                    setLoading(false);
                 }
             };
 
@@ -791,6 +741,8 @@
 
             const handleLogout = async () => { const token = user?.token; try { if (token) await callApi({ action: 'LOGOUT', token }); } catch (e) {} finally { setUser(null); sessionStorage.removeItem('cardPortalUser'); setSelectedEvent(null); setShowForm(false); setShowListModal(false); setShowNotice(false); setShowMyBookings(false); } };
 
+
+            // ⭐ 비로그인 (메인 로그인 화면) 영역
             if (!user) {
                 return (
                     <div className="h-dvh flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 transition-colors duration-200">
@@ -801,38 +753,50 @@
                                 <p className="text-sm text-slate-400 dark:text-slate-400 mt-2">이름과 사번을 정확히 입력해 주세요.</p>
                             </div>
             
-                            {/* --- [추가됨] 현재 대여 가능 / 다음 예약 표시 영역 --- */}
-                            <div className="mb-6 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-3 flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${currentBooking ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
-                                    <div className="min-w-0 text-left">
-                                        {currentBooking ? (
-                                            <>
-                                                <div className="text-sm font-bold text-slate-900 dark:text-white">현재 사용 중</div>
-                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                                                    {currentBooking.extendedProps?.dept} · {formatClock(currentBooking.start)} ~ {formatClock(currentBooking.end)}
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">현재 대여 가능</div>
-                                                <div className="text-xs text-slate-400 mt-0.5">현재 예약된 사용자가 없습니다.</div>
-                                            </>
-                                        )}
+                            {/* --- [상태창] 현재 대여 가능 / 다음 예약 표시 영역 --- */}
+                            <div className="mb-6 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-3 min-h-[64px] flex flex-col justify-center transition-all">
+                                {isFetchingStatus ? (
+                                    <div className="flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400">
+                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span className="text-xs font-medium">실시간 상태 조회 중...</span>
                                     </div>
-                                </div>
-                                {nextBooking && (
-                                    <div className="text-right shrink-0">
-                                        <div className="text-[10px] text-slate-400">다음 예약</div>
-                                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5">
-                                            {formatShortDate(nextBooking.start)} {formatClock(nextBooking.start)}
+                                ) : (
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${currentBooking ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
+                                            <div className="min-w-0 text-left">
+                                                {currentBooking ? (
+                                                    <>
+                                                        <div className="text-sm font-bold text-slate-900 dark:text-white">현재 사용 중</div>
+                                                        <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                                            {currentBooking.extendedProps?.dept} · {formatClock(currentBooking.start)} ~ {formatClock(currentBooking.end)}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">현재 대여 가능</div>
+                                                        <div className="text-xs text-slate-400 mt-0.5">현재 예약된 사용자가 없습니다.</div>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
+                                        {nextBooking && (
+                                            <div className="text-right shrink-0">
+                                                <div className="text-[10px] text-slate-400">다음 예약</div>
+                                                <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5">
+                                                    {formatShortDate(nextBooking.start)} {formatClock(nextBooking.start)}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
                             {/* ------------------------------------------------ */}
 
-                <form onSubmit={handleLogin} className="space-y-5">
+                            <form onSubmit={handleLogin} className="space-y-5">
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">이름</label>
                                     <input type="text" required value={loginInput.name} onChange={e => setLoginInput({ ...loginInput, name: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 text-sm transition" placeholder="홍길동" />
@@ -842,11 +806,9 @@
                                     <input
                                         type="text"
                                         required
-                                        maxLength={5} // 최대 5자리까지만 입력 가능
+                                        maxLength={5}
                                         value={loginInput.empNo}
                                         onChange={e => {
-                                            // 1. toUpperCase()로 소문자를 대문자로 자동 변환
-                                            // 2. replace()로 영문 대문자와 숫자 이외의 문자(한글, 특수기호 등)는 자동 삭제
                                             const formattedEmpNo = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
                                             setLoginInput({ ...loginInput, empNo: formattedEmpNo });
                                         }}
@@ -862,10 +824,7 @@
             }
 
             return (
-                // 화면 꽉 차게 flex 레이아웃 적용
                 <div className="h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-200 overflow-hidden">
-
-                    {/* 안내문구가 통합된 새로운 헤더 */}
                     <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0 shadow-sm transition-colors duration-200 z-10">
                         <div className="flex flex-col">
                             <span className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">DNS : Card-Portal</span>
@@ -890,7 +849,6 @@
                                     className="relative flex items-center px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition"
                                 >
                                     내 예약
-                            
                                     {myBookings.length > 0 && (
                                         <span className="ml-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px]">
                                             {myBookings.length}
@@ -900,8 +858,6 @@
                                 <button onClick={fetchBookings} className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-md">
                                     <span>🔄 새로고침</span>
                                 </button>
-
-                                {/* 로그아웃: 텍스트 형태로 유지하여 실수 클릭 방지 */}
                                 <button onClick={handleLogout} className="px-2 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition">
                                     로그아웃
                                 </button>
@@ -909,31 +865,19 @@
                         </div>
                     </header>
 
-                    {/* 화면을 꽉 채우는 새로운 달력 영역 */}
                     <main className="flex-1 w-full p-2 sm:p-4 pb-16 sm:pb-4 min-h-0 flex flex-col relative">
                         <div className="shrink-0 mb-2 sm:mb-3 space-y-2">
-                        
-                            {/* 현재 상태 */}
                             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between gap-3 shadow-sm">
-                        
                                 <div className="flex items-center gap-3 min-w-0">
-                        
                                     <span
                                         className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                                            currentBooking
-                                                ? 'bg-red-500'
-                                                : 'bg-emerald-500'
+                                            currentBooking ? 'bg-red-500' : 'bg-emerald-500'
                                         }`}
                                     ></span>
-                        
                                     <div className="min-w-0">
-                        
                                         {currentBooking ? (
                                             <>
-                                                <div className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    현재 사용 중
-                                                </div>
-                        
+                                                <div className="text-sm font-bold text-slate-900 dark:text-white">현재 사용 중</div>
                                                 <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                                                     {currentBooking.extendedProps?.dept}
                                                     {' · '}
@@ -944,45 +888,27 @@
                                             </>
                                         ) : (
                                             <>
-                                                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                                    현재 대여 가능
-                                                </div>
-                        
-                                                <div className="text-xs text-slate-400 mt-0.5">
-                                                    현재 예약된 사용자가 없습니다.
-                                                </div>
+                                                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">현재 대여 가능</div>
+                                                <div className="text-xs text-slate-400 mt-0.5">현재 예약된 사용자가 없습니다.</div>
                                             </>
                                         )}
-                        
                                     </div>
                                 </div>
                         
-                        
-                                {/* 다음 예약 */}
                                 {nextBooking && (
                                     <div className="text-right shrink-0">
-                                        <div className="text-[10px] text-slate-400">
-                                            다음 예약
-                                        </div>
-                        
+                                        <div className="text-[10px] text-slate-400">다음 예약</div>
                                         <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5">
-                                            {formatShortDate(nextBooking.start)}
-                                            {' '}
-                                            {formatClock(nextBooking.start)}
+                                            {formatShortDate(nextBooking.start)} {formatClock(nextBooking.start)}
                                         </div>
-                        
                                         <div className="hidden sm:block text-[10px] text-slate-400">
                                             {nextBooking.extendedProps?.dept}
                                         </div>
                                     </div>
                                 )}
-                        
                             </div>
                         
-                        
-                            {/* 예산 필터 */}
                             <div className="flex gap-1.5 overflow-x-auto pb-1">
-                        
                                 {[
                                     { key: '전체', label: '전체' },
                                     { key: '간호부', label: '간호부' },
@@ -990,7 +916,6 @@
                                     { key: '총무팀', label: '총무팀' },
                                     { key: '기타', label: '기타' }
                                 ].map(item => (
-                        
                                     <button
                                         key={item.key}
                                         onClick={() => setBudgetFilter(item.key)}
@@ -1002,12 +927,10 @@
                                     >
                                         {item.label}
                                     </button>
-                        
                                 ))}
-                        
                             </div>
-                        
                         </div>
+                        
                         <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-full relative transition-colors duration-200 overflow-hidden">
                             <div ref={calendarContainerRef} id="calendar" className="w-full h-full"></div>
                         </div>
@@ -1032,12 +955,10 @@
                             <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden"
                                 onClick={e => e.stopPropagation()}
                             >
-                    
                                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                                     <div><h3 className="font-bold text-slate-900 dark:text-white">내 예약</h3>
                                         <p className="text-xs text-slate-400 mt-0.5">예정된 예약 {myBookings.length}건</p>
                                     </div>
-                    
                                     <button
                                         onClick={() => setShowMyBookings(false)}
                                         className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 text-xl"
@@ -1046,7 +967,6 @@
                                     </button>
                                 </div>
                     
-                                {/* 예약 목록 */}
                                 <div className="max-h-[60vh] overflow-y-auto">
                                     {myBookings.length === 0 ? (
                                         <div className="py-14 text-center">
@@ -1055,38 +975,23 @@
                                             <p className="text-xs text-slate-400 mt-1">캘린더에서 원하는 날짜를 선택해 주세요.</p>
                                         </div>
                                     ) : (
-                    
                                         myBookings.map(ev => (
-                    
                                             <button
                                                 key={ev.id}
                                                 onClick={() => {
                                                     setShowMyBookings(false);
-                    
                                                     openBookingById(ev.id, new Date(ev.start), new Date(ev.end));
                                                 }}
                                                 className="w-full text-left px-5 py-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
                                             >
-                    
                                                 <div className="flex justify-between gap-3">
-                    
                                                     <div className="min-w-0">
-                    
                                                         <div className="text-sm font-bold text-slate-800 dark:text-white">
                                                             {ev.extendedProps?.dept}
                                                         </div>
-                    
                                                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                                            {formatShortDate(ev.start)}
-                                                            {' '}
-                                                            {formatClock(ev.start)}
-                                                            {' ~ '}
-                    
-                                                            {formatShortDate(ev.end) !==
-                                                             formatShortDate(ev.start)
-                                                                ? `${formatShortDate(ev.end)} `
-                                                                : ''
-                                                            }
+                                                            {formatShortDate(ev.start)} {formatClock(ev.start)} ~ 
+                                                            {formatShortDate(ev.end) !== formatShortDate(ev.start) ? ` ${formatShortDate(ev.end)} ` : ' '}
                                                             {formatClock(ev.end)}
                                                         </div>
                                                         {ev.extendedProps?.purpose && (
@@ -1094,7 +999,6 @@
                                                                 {ev.extendedProps.purpose}
                                                             </div>
                                                         )}
-                    
                                                     </div>
                                                     <span className="text-slate-300 dark:text-slate-600"> ›</span>
                                                 </div>
@@ -1242,7 +1146,6 @@
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full overflow-hidden">
-                                        {/* 대여 시작일 및 시간 */}
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">대여 시작일 및 시간</label>
                                             <div className="flex space-x-2">
@@ -1267,7 +1170,6 @@
                                             </div>
                                         </div>
 
-                                        {/* 반납 예정일 및 시간 */}
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">반납 예정일 및 시간</label>
                                             <div className="flex space-x-2">
@@ -1292,6 +1194,7 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">사용 용도 (사업명 또는 사업계획서명)</label>
                                         <input type="text" disabled={!hasPermission} required value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 disabled:bg-slate-50 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500 transition-colors" placeholder="목적을 명확히 기입해주세요." />
@@ -1304,71 +1207,95 @@
 
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">연락처 (휴대폰 번호)</label>
-                                        {hasPermission ? (<><div className="flex items-center space-x-2"><select value={phone1Select} onChange={e => setPhone1Select(e.target.value)} className="w-24 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-blue-600 dark:focus:border-blue-500"><option value="010">010</option><option value="011">011</option><option value="016">016</option><option value="기타">직접 입력</option></select><span className="text-slate-400 dark:text-slate-500">-</span><input type="text" required maxLength="4" value={phone2} onChange={e => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600" /><span className="text-slate-400 dark:text-slate-500">-</span><input type="text" required maxLength="4" value={phone3} onChange={e => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600" /></div>{phone1Select === '기타' && <input type="text" required maxLength="4" value={phone1Custom} onChange={e => setPhone1Custom(e.target.value.replace(/[^0-9]/g, ''))} className="w-24 mt-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center" placeholder="번호 입력" />}</>) : (<div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3"><div className="flex items-center justify-between gap-3"><div><div className="text-sm font-semibold text-slate-700 dark:text-slate-200">{selectedEvent?.contactRevealed ? selectedEvent.contact : selectedEvent?.contactMasked || '연락처 비공개'}</div>{!selectedEvent?.contactRevealed && <div className="text-[11px] text-slate-400 mt-1">필요한 경우에만 연락처를 확인해 주세요.</div>}</div>{!selectedEvent?.contactRevealed && <button type="button" onClick={async () => { setLoading(true); try { const data = await callApi({ action: 'GET_CONTACT', token: user.token, id: selectedEvent.id }); setSelectedEvent(prev => ({ ...prev, contact: data.contact, contactRevealed: true })); showToast('연락처가 표시되었습니다.'); } catch (e) { alert(e.message); } finally { setLoading(false); } }} className="shrink-0 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition">연락처 보기</button>}</div></div>)}
+                                        {hasPermission ? (
+                                            <>
+                                                <div className="flex items-center space-x-2">
+                                                    <select value={phone1Select} onChange={e => setPhone1Select(e.target.value)} className="w-24 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-blue-600 dark:focus:border-blue-500">
+                                                        <option value="010">010</option><option value="011">011</option><option value="016">016</option><option value="기타">직접 입력</option>
+                                                    </select>
+                                                    <span className="text-slate-400 dark:text-slate-500">-</span>
+                                                    <input type="text" required maxLength="4" value={phone2} onChange={e => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600" />
+                                                    <span className="text-slate-400 dark:text-slate-500">-</span>
+                                                    <input type="text" required maxLength="4" value={phone3} onChange={e => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center focus:outline-none focus:border-blue-600" />
+                                                </div>
+                                                {phone1Select === '기타' && <input type="text" required maxLength="4" value={phone1Custom} onChange={e => setPhone1Custom(e.target.value.replace(/[^0-9]/g, ''))} className="w-24 mt-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm text-center" placeholder="번호 입력" />}
+                                            </>
+                                        ) : (
+                                            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">{selectedEvent?.contactRevealed ? selectedEvent.contact : selectedEvent?.contactMasked || '연락처 비공개'}</div>
+                                                        {!selectedEvent?.contactRevealed && <div className="text-[11px] text-slate-400 mt-1">필요한 경우에만 연락처를 확인해 주세요.</div>}
+                                                    </div>
+                                                    {!selectedEvent?.contactRevealed && <button type="button" onClick={async () => { setLoading(true); try { const data = await callApi({ action: 'GET_CONTACT', token: user.token, id: selectedEvent.id }); setSelectedEvent(prev => ({ ...prev, contact: data.contact, contactRevealed: true })); showToast('연락처가 표시되었습니다.'); } catch (e) { alert(e.message); } finally { setLoading(false); } }} className="shrink-0 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition">연락처 보기</button>}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-slate-700 mt-4">
-    {formData.id && hasPermission && (
-        <button type="button" onClick={handleDelete} className="flex-1 sm:flex-none whitespace-nowrap bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-medium px-3 py-2.5 rounded-xl text-xs sm:text-sm transition">
-            예약 취소
-        </button>
-    )}
-    <div className="flex-1 flex gap-2 justify-end w-full sm:w-auto">
+                                        {formData.id && hasPermission && (
+                                            <button type="button" onClick={handleDelete} className="flex-1 sm:flex-none whitespace-nowrap bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-medium px-3 py-2.5 rounded-xl text-xs sm:text-sm transition">
+                                                예약 취소
+                                            </button>
+                                        )}
+                                        <div className="flex-1 flex gap-2 justify-end w-full sm:w-auto">
 
-        {user.isAdmin && (
-            <button
-                type="button"
-                onClick={async () => {
-                    const isHoliday = !!customHolidays[selectedSlot.startDate];
-                    const name = isHoliday ? "" : "임시공휴일";
-                    setLoading(true);
-                    try {
-                        await callApi({ action: "TOGGLE_HOLIDAY", token: user.token, date: selectedSlot.startDate, name });
+                                            {user.isAdmin && (
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        const isHoliday = !!customHolidays[selectedSlot.startDate];
+                                                        const name = isHoliday ? "" : "임시공휴일";
+                                                        setLoading(true);
+                                                        try {
+                                                            await callApi({ action: "TOGGLE_HOLIDAY", token: user.token, date: selectedSlot.startDate, name });
 
-                        setTimeout(async () => {
-                            await fetchBookings();
-                            calendarInstanceRef.current?.render();
-                            setLoading(false);
-                            alert(isHoliday ? "공휴일이 해제되었습니다." : "공휴일로 지정되었습니다.");
-                        }, 1500);
+                                                            setTimeout(async () => {
+                                                                await fetchBookings();
+                                                                calendarInstanceRef.current?.render();
+                                                                setLoading(false);
+                                                                alert(isHoliday ? "공휴일이 해제되었습니다." : "공휴일로 지정되었습니다.");
+                                                            }, 1500);
 
-                        setShowForm(false);
-                    } catch (e) {
-                        alert("오류가 발생했습니다.");
-                        setLoading(false);
-                    }
-                }}
-                className={`flex-1 sm:flex-none whitespace-nowrap px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition ${!!customHolidays[selectedSlot.startDate]
-                        ? "bg-amber-600 hover:bg-amber-700 text-white"
-                        : "bg-purple-600 hover:bg-purple-700 text-white"
-                    }`}
-            >
-                {customHolidays[selectedSlot.startDate] ? "공휴일 해제" : "공휴일 지정"}
-            </button>
-        )}
-        
-        <button type="button" onClick={() => {
-            setShowForm(false);
-            calendarInstanceRef.current?.unselect();
-        }} className="flex-1 sm:flex-none whitespace-nowrap px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-            취소
-        </button>
-        
-        {hasPermission && (
-            <button
-                type="submit"
-                disabled={loading}
-                className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition ${loading ? 'bg-gray-400 dark:bg-slate-600 cursor-not-allowed text-white' : 'bg-blue-700 text-white hover:bg-blue-800 dark:hover:bg-blue-600'}`}
-            >
-                {loading ? '저장 중...' : '저장'}
-            </button>
-        )}
-    </div>
-</div>
+                                                            setShowForm(false);
+                                                        } catch (e) {
+                                                            alert("오류가 발생했습니다.");
+                                                            setLoading(false);
+                                                        }
+                                                    }}
+                                                    className={`flex-1 sm:flex-none whitespace-nowrap px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition ${!!customHolidays[selectedSlot.startDate]
+                                                            ? "bg-amber-600 hover:bg-amber-700 text-white"
+                                                            : "bg-purple-600 hover:bg-purple-700 text-white"
+                                                        }`}
+                                                >
+                                                    {customHolidays[selectedSlot.startDate] ? "공휴일 해제" : "공휴일 지정"}
+                                                </button>
+                                            )}
+                                            
+                                            <button type="button" onClick={() => {
+                                                setShowForm(false);
+                                                calendarInstanceRef.current?.unselect();
+                                            }} className="flex-1 sm:flex-none whitespace-nowrap px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                                                취소
+                                            </button>
+                                            
+                                            {hasPermission && (
+                                                <button
+                                                    type="submit"
+                                                    disabled={loading}
+                                                    className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition ${loading ? 'bg-gray-400 dark:bg-slate-600 cursor-not-allowed text-white' : 'bg-blue-700 text-white hover:bg-blue-800 dark:hover:bg-blue-600'}`}
+                                                >
+                                                    {loading ? '저장 중...' : '저장'}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </form>
                             </div>
                         </div>
                     )}
+
                     {showInstruction && (
                         <div 
                             className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]" onClick={() => setShowInstruction(false)}>
@@ -1401,11 +1328,9 @@
                                 </button>
                             </div>
                         </div>
-                    
                     )}
 
                     {toast && (<div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[99999]">
-                    
                             <div className={`flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl border text-sm font-semibold ${ toast.type === 'error'
                                         ? 'bg-red-600 border-red-500 text-white'
                                         : toast.type === 'warning'
@@ -1429,17 +1354,11 @@
                     )}
 
                     <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur border-t border-slate-200 dark:border-slate-700 px-3 py-2">
-                    
                         <div className="grid grid-cols-3 gap-1">
-                    
-                            {/* 달력 */}
                             <button
                                 onClick={() => {
                                     if (!calendarInstanceRef.current) return;
-                    
-                                    calendarInstanceRef.current.changeView(
-                                        'dayGridMonth'
-                                    );
+                                    calendarInstanceRef.current.changeView('dayGridMonth');
                                 }}
                                 className="flex flex-col items-center justify-center gap-1 py-1 text-slate-500 dark:text-slate-300"
                             >
@@ -1453,36 +1372,27 @@
                                     <rect x="3" y="4" width="18" height="17" rx="2"/>
                                     <path d="M8 2v4M16 2v4M3 10h18"/>
                                 </svg>
-                    
                                 <span className="text-[10px] font-medium">
                                     달력
                                 </span>
                             </button>
                     
-                    
-                            {/* 오늘 */}
                             <button
                                 onClick={() => {
                                     if (!calendarInstanceRef.current) return;
-                    
                                     calendarInstanceRef.current.today();
-                                    calendarInstanceRef.current.changeView(
-                                        'timeGridDay'
-                                    );
+                                    calendarInstanceRef.current.changeView('timeGridDay');
                                 }}
                                 className="flex flex-col items-center justify-center gap-1 py-1 text-blue-600 dark:text-blue-400"
                             >
                                 <div className="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-[10px] font-bold">
                                     {currentTime.getDate()}
                                 </div>
-                    
                                 <span className="text-[10px] font-semibold">
                                     오늘
                                 </span>
                             </button>
                     
-                    
-                            {/* 내 예약 */}
                             <button
                                 onClick={() => setShowMyBookings(true)}
                                 className="relative flex flex-col items-center justify-center gap-1 py-1 text-slate-500 dark:text-slate-300"
@@ -1504,12 +1414,10 @@
                                         {myBookings.length}
                                     </span>
                                 )}
-                    
                                 <span className="text-[10px] font-medium">
                                     내 예약
                                 </span>
                             </button>
-                    
                         </div>
                     </div>
                 </div>
