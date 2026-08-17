@@ -376,19 +376,38 @@
             }, [events]);
 
             const fetchBookings = async (isSilent = false) => {
-                const silent = isSilent === true; if (!user?.token) return; if (!silent) setLoading(true);
-                try { const data = await callApi({ action: 'LIST', token: user.token }); setEvents(data.bookings.map(b => { const budgetColor = b.budget === '간호부' ? '#3b82f6' : b.budget === '총무팀' ? '#10b981' : b.budget === 'QI(적정진료관리팀)' ? '#f59e0b' : '#64748b'; return { id: b.id, title: `[${b.dept}] ${b.name}`, start: b.startTime, end: b.endTime, extendedProps: { ...b, colorCode: budgetColor }, backgroundColor: 'transparent', borderColor: 'transparent' }; })); const holidayMap = {}; (data.holidays || []).forEach(row => holidayMap[row[0]] = row[1]); setCustomHolidays(holidayMap); }
-                catch (e) { console.error(e); if (!silent) alert(e.message); } finally { if (!silent) setLoading(false); }
+                const silent = isSilent === true; 
+                if (!silent) setLoading(true);
+                try { 
+                    // 비로그인 상태에서도 LIST 액션 호출을 위해 token 조건부 처리
+                    const payload = { action: 'LIST' };
+                    if (user?.token) payload.token = user.token;
+                    
+                    const data = await callApi(payload); 
+                    setEvents(data.bookings.map(b => { 
+                        const budgetColor = b.budget === '간호부' ? '#3b82f6' : b.budget === '총무팀' ? '#10b981' : b.budget === 'QI(적정진료관리팀)' ? '#f59e0b' : '#64748b'; 
+                        return { id: b.id, title: `[${b.dept}] ${b.name}`, start: b.startTime, end: b.endTime, extendedProps: { ...b, colorCode: budgetColor }, backgroundColor: 'transparent', borderColor: 'transparent' }; 
+                    })); 
+                    const holidayMap = {}; (data.holidays || []).forEach(row => holidayMap[row[0]] = row[1]); 
+                    setCustomHolidays(holidayMap); 
+                }
+                catch (e) { 
+                    console.error(e); 
+                    if (!silent) alert(e.message); 
+                } finally { 
+                    if (!silent) setLoading(false); 
+                }
             };
-
-            const handleLogin = async (e) => {
-                e.preventDefault(); const trimmedName = loginInput.name.trim(), empNo = loginInput.empNo.trim().toUpperCase(); if (!trimmedName || !empNo) return alert('이름과 사번을 정확히 입력해주세요.'); setLoading(true);
-                try { const data = await callApi({ action: 'LOGIN', name: trimmedName, empNo }); const loggedInUser = { ...data.user, token: data.token }; setUser(loggedInUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(loggedInUser)); if (!loggedInUser.isAdmin) setShowInstruction(true); }
-                catch (e) { alert(e.message); } finally { setLoading(false); }
-            };
-
-            const handleAdminAuth = async () => { const pin = window.prompt('관리자 PIN을 입력해주세요.'); if (pin === null) return; const cleanPin = String(pin).trim().toLowerCase(); if (!cleanPin) return alert('관리자 PIN을 입력해주세요.'); setLoading(true); try { const data = await callApi({ action: 'ADMIN_AUTH', token: user.token, pin: cleanPin }); const upgradedUser = { ...user, ...data.user, token: user.token }; setUser(upgradedUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(upgradedUser)); showToast('관리자 인증이 완료되었습니다.'); await fetchBookings(true); } catch (e) { alert(e.message); } finally { setLoading(false); } };
-            React.useEffect(() => { if (user) fetchBookings(); }, [user]);
+            
+            // 앱이 처음 켜질 때 (비로그인 상태) 백그라운드에서 데이터를 가져오도록 수정
+            React.useEffect(() => { 
+                fetchBookings(true); 
+            }, []); 
+            
+            // 로그인 성공 시 한번 더 갱신 (선택사항)
+            React.useEffect(() => { 
+                if (user) fetchBookings(true); 
+            }, [user]);
 
             React.useEffect(() => {
                 if (!user) return;
@@ -776,11 +795,44 @@
                 return (
                     <div className="h-dvh flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 transition-colors duration-200">
                         <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 border border-slate-100 dark:border-slate-700 transition-colors duration-200">
-                            <div className="text-center mb-8">
+                            
+                            <div className="text-center mb-6">
                                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">간호부 법인카드 예약 시스템</h2>
                                 <p className="text-sm text-slate-400 dark:text-slate-400 mt-2">이름과 사번을 정확히 입력해 주세요.</p>
                             </div>
-                            <form onSubmit={handleLogin} className="space-y-5">
+            
+                            {/* --- [추가됨] 현재 대여 가능 / 다음 예약 표시 영역 --- */}
+                            <div className="mb-6 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-3 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${currentBooking ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
+                                    <div className="min-w-0 text-left">
+                                        {currentBooking ? (
+                                            <>
+                                                <div className="text-sm font-bold text-slate-900 dark:text-white">현재 사용 중</div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                                    {currentBooking.extendedProps?.dept} · {formatClock(currentBooking.start)} ~ {formatClock(currentBooking.end)}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">현재 대여 가능</div>
+                                                <div className="text-xs text-slate-400 mt-0.5">현재 예약된 사용자가 없습니다.</div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                {nextBooking && (
+                                    <div className="text-right shrink-0">
+                                        <div className="text-[10px] text-slate-400">다음 예약</div>
+                                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5">
+                                            {formatShortDate(nextBooking.start)} {formatClock(nextBooking.start)}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            {/* ------------------------------------------------ */}
+
+                <form onSubmit={handleLogin} className="space-y-5">
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">이름</label>
                                     <input type="text" required value={loginInput.name} onChange={e => setLoginInput({ ...loginInput, name: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 text-sm transition" placeholder="홍길동" />
@@ -901,6 +953,7 @@
                                                 </div>
                                             </>
                                         )}
+                        
                                     </div>
                                 </div>
                         
@@ -923,32 +976,36 @@
                                         </div>
                                     </div>
                                 )}
+                        
                             </div>
                         
-                            {/* 예산 필터 - 관리자에게만 표시 */}
-                            {user.isAdmin && (
-                                <div className="flex gap-1.5 overflow-x-auto pb-1">
-                                    {[
-                                        { key: '전체', label: '전체' },
-                                        { key: '간호부', label: '간호부' },
-                                        { key: 'QI(적정진료관리팀)', label: 'QI' },
-                                        { key: '총무팀', label: '총무팀' },
-                                        { key: '기타', label: '기타' }
-                                    ].map(item => (
-                                        <button
-                                            key={item.key}
-                                            onClick={() => setBudgetFilter(item.key)}
-                                            className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                                                budgetFilter === item.key
-                                                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                                                    : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                            }`}
-                                        >
-                                            {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                        
+                            {/* 예산 필터 */}
+                            <div className="flex gap-1.5 overflow-x-auto pb-1">
+                        
+                                {[
+                                    { key: '전체', label: '전체' },
+                                    { key: '간호부', label: '간호부' },
+                                    { key: 'QI(적정진료관리팀)', label: 'QI' },
+                                    { key: '총무팀', label: '총무팀' },
+                                    { key: '기타', label: '기타' }
+                                ].map(item => (
+                        
+                                    <button
+                                        key={item.key}
+                                        onClick={() => setBudgetFilter(item.key)}
+                                        className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                                            budgetFilter === item.key
+                                                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                                                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </button>
+                        
+                                ))}
+                        
+                            </div>
                         
                         </div>
                         <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-full relative transition-colors duration-200 overflow-hidden">
