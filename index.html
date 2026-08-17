@@ -150,7 +150,7 @@
         <section id="search-panel" class="search-panel relative shrink-0 border-b border-editorial bg-[#fdfcf7] px-4 py-3" aria-labelledby="search-title">
             <div class="flex items-center justify-between gap-3">
                 <h2 id="search-title" class="font-semibold text-sm whitespace-nowrap">개인 근무표 검색</h2>
-                <button id="toggle-search" type="button" class="border border-gray-400 px-3 py-1.5 text-xs hover:border-black" aria-expanded="true" aria-controls="search-content">검색 접기</button>
+                <button id="toggle-search" type="button" class="border border-gray-400 px-3 py-1.5 text-xs hover:border-black" aria-expanded="true" aria-controls="search-content">검색창 숨기기</button>
             </div>
             <div id="search-content">
                 <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -398,12 +398,38 @@
             return rows;
         }
 
+        function getTodayColumnIndex(headers) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
+            const day = today.getDate();
+            const patterns = [
+                `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`,
+                `${month}/${day}`,
+                `${month}월${day}일`,
+                `${day}일`
+            ];
+            return headers.findIndex(header => {
+                const normalizedHeader = header.replace(/\s/g, '');
+                return patterns.some(pattern => normalizedHeader.includes(pattern)) || normalizedHeader === String(day);
+            });
+        }
+
+        function getColumnIndex(headers, pattern) {
+            return headers.findIndex(header => pattern.test(header));
+        }
+
         function renderSearchResults(rows, query) {
             const normalizedQuery = query.replace(/\s/g, '').toLowerCase();
             const headerIndex = Math.max(0, rows.findIndex(row =>
                 row.some(value => /이름|성명|사번|사원번호|직번|employee|name|id/i.test(value))
             ));
             const headers = rows[headerIndex] || [];
+            const nameIndex = getColumnIndex(headers, /이름|성명|name/i);
+            const personColumnIndex = nameIndex >= 0 ? nameIndex : 0;
+            const employeeNoIndex = getColumnIndex(headers, /사번|사원번호|직번|employee.?no|employee.?id/i);
+            const todayIndex = getTodayColumnIndex(headers);
             const matches = rows.slice(headerIndex + 1).filter(row =>
                 row.some(value => value.replace(/\s/g, '').toLowerCase().includes(normalizedQuery))
             );
@@ -415,14 +441,46 @@
                 return;
             }
 
+            const resultParts = [];
+            const todaySummary = document.createElement("div");
+            todaySummary.className = "mb-3 border border-black bg-white px-3 py-3";
+            const todayTitle = document.createElement("p");
+            todayTitle.className = "mb-2 font-semibold text-sm";
+            todayTitle.textContent = "오늘 근무";
+            todaySummary.appendChild(todayTitle);
+
+            if (todayIndex >= 0) {
+                matches.forEach(row => {
+                    const item = document.createElement("span");
+                    item.className = "mr-4 inline-block text-sm";
+                    const personName = row[personColumnIndex] || query;
+                    const employeeNo = employeeNoIndex >= 0 ? row[employeeNoIndex] : "";
+                    item.textContent = `${personName}${employeeNo ? ` (${employeeNo})` : ""}: ${row[todayIndex] || "근무 정보 없음"}`;
+                    todaySummary.appendChild(item);
+                });
+            } else {
+                const unavailable = document.createElement("p");
+                unavailable.className = "text-sm text-gray-600";
+                unavailable.textContent = "현재 시트에서 오늘 날짜 열을 찾지 못했습니다.";
+                todaySummary.appendChild(unavailable);
+            }
+            resultParts.push(todaySummary);
+
             const table = document.createElement("table");
             table.className = "min-w-full border-collapse text-left text-xs";
             const thead = document.createElement("thead");
             const headRow = document.createElement("tr");
-            headers.forEach(header => {
+            headers.forEach((header, index) => {
                 const th = document.createElement("th");
                 th.textContent = header || "-";
                 th.className = "border border-gray-300 bg-gray-100 px-3 py-2 font-semibold whitespace-nowrap";
+                if (index === personColumnIndex) {
+                    th.classList.add("sticky", "left-0", "z-10", "bg-gray-100");
+                }
+                if (index === todayIndex) {
+                    th.classList.add("bg-yellow-100");
+                    th.textContent = `${header || "오늘"} (오늘)`;
+                }
                 headRow.appendChild(th);
             });
             thead.appendChild(headRow);
@@ -435,12 +493,19 @@
                     const td = document.createElement("td");
                     td.textContent = row[index] || "";
                     td.className = "border border-gray-300 bg-white px-3 py-2 whitespace-nowrap";
+                    if (index === personColumnIndex) {
+                        td.classList.add("sticky", "left-0", "z-[1]", "bg-white", "font-semibold");
+                    }
+                    if (index === todayIndex) {
+                        td.classList.add("bg-yellow-50", "font-semibold");
+                    }
                     tr.appendChild(td);
                 });
                 tbody.appendChild(tr);
             });
             table.appendChild(tbody);
-            elements.searchResults.replaceChildren(table);
+            resultParts.push(table);
+            elements.searchResults.replaceChildren(...resultParts);
             elements.searchStatus.textContent = `${matches.length}건을 찾았습니다${matches.length > 100 ? ' (처음 100건만 표시)' : ''}.`;
         }
 
@@ -487,7 +552,7 @@
             const isExpanded = elements.toggleSearchButton.getAttribute("aria-expanded") === "true";
             elements.searchContent.classList.toggle("hidden", isExpanded);
             elements.toggleSearchButton.setAttribute("aria-expanded", String(!isExpanded));
-            elements.toggleSearchButton.textContent = isExpanded ? "검색 펼치기" : "검색 접기";
+            elements.toggleSearchButton.textContent = isExpanded ? "검색창 열기" : "검색창 숨기기";
         });
     </script>
 </body>
