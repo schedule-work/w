@@ -832,8 +832,10 @@
 
             return (
                 <div className="h-dvh flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-200 overflow-hidden">
-                    <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0 shadow-sm transition-colors duration-200 z-10">
-                        <div className="flex flex-col select-none">
+                    <header className="relative bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0 shadow-sm transition-colors duration-200 z-20">
+                        
+                        {/* 좌측: 로고 및 설명 */}
+                        <div className="flex flex-col select-none relative z-10">
                             <span 
                                 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
                                 onClick={() => {
@@ -857,7 +859,54 @@
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-3">
+                        {/* ⭐ 데스크탑용 상태창 (헤더 정중앙 고정 팝업 위젯) */}
+                        <div className="hidden md:flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[30] items-center gap-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-2 shadow-sm select-none transition-all whitespace-nowrap">
+                            {isFetchingStatus ? (
+                                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-1 py-0.5">
+                                    <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span className="text-xs font-medium">실시간 조회 중...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${currentBooking ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
+                                        <div className="flex flex-col justify-center min-w-[70px]">
+                                            {currentBooking ? (
+                                                <>
+                                                    <div className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight">사용 중</div>
+                                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[120px]">
+                                                        {currentBooking.extendedProps?.dept}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 leading-tight">대여 가능</div>
+                                                    <div className="text-[11px] text-slate-400 truncate">예약 없음</div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {nextBooking && (
+                                        <>
+                                            <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                            <div className="flex flex-col justify-center text-right shrink-0">
+                                                <div className="text-[10px] text-slate-400 leading-tight">다음 예약</div>
+                                                <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate mt-0.5">
+                                                    {formatShortDate(nextBooking.start)} {formatClock(nextBooking.start)}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 우측: 유저 및 컨트롤 버튼 */}
+                        <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-3 relative z-10">
                             <span className="text-sm text-slate-600 dark:text-slate-300">
                                 <strong className="text-slate-900 dark:text-white">{user.name}</strong> 님
                             </span>
@@ -888,7 +937,7 @@
 
                     <main className="flex-1 w-full p-2 sm:p-4 pb-16 sm:pb-4 min-h-0 flex flex-col relative">
                         
-                        {/* ⭐ 모바일용 상태창 (화면이 작을 때만 상단에 표시) */}
+                        {/* 모바일용 상태창 (화면이 작아서 헤더 중앙에 카드를 못 띄울 때 나타남) */}
                         <div className="md:hidden shrink-0 mb-2 space-y-2">
                             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between gap-3 shadow-sm select-none">
                                 {isFetchingStatus ? (
@@ -958,55 +1007,8 @@
                             </div>
                         )}
                         
-                        {/* ⭐ 달력 영역 및 데스크탑용 미니 상태 카드 */}
+                        {/* 달력 영역 */}
                         <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-full relative transition-colors duration-200 overflow-hidden">
-                            
-                            {/* 데스크탑용 상태창 (달력 헤더 today 옆에 겹쳐서 표시) */}
-                            <div className="hidden md:flex absolute top-[16px] sm:top-[20px] left-[160px] lg:left-[170px] z-[5] items-center gap-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-600 px-3 py-1.5 shadow-sm select-none transition-all">
-                                {isFetchingStatus ? (
-                                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-1 py-0.5">
-                                        <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <span className="text-[11px] font-medium">조회 중...</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`w-2 h-2 rounded-full shrink-0 ${currentBooking ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
-                                            <div className="flex flex-col justify-center min-w-[70px]">
-                                                {currentBooking ? (
-                                                    <>
-                                                        <div className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight">사용 중</div>
-                                                        <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[90px]">
-                                                            {currentBooking.extendedProps?.dept}
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 leading-tight">대여 가능</div>
-                                                        <div className="text-[10px] text-slate-400 truncate">예약 없음</div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {nextBooking && (
-                                            <>
-                                                <div className="w-[1px] h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                                                <div className="flex flex-col justify-center text-right shrink-0">
-                                                    <div className="text-[9px] text-slate-400 leading-tight">다음 예약</div>
-                                                    <div className="text-[10px] font-semibold text-slate-700 dark:text-slate-200 truncate">
-                                                        {formatShortDate(nextBooking.start)} {formatClock(nextBooking.start)}
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
                             <div ref={calendarContainerRef} id="calendar" className="w-full h-full"></div>
                         </div>
 
