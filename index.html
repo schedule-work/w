@@ -341,7 +341,6 @@
                 eventsRef.current = events;
             }, [events]);
 
-            // ⭐ fetchBookings 로직 완벽 연동
             const fetchBookings = async (isSilent = false) => {
                 const silent = isSilent === true; 
                 if (!silent) setLoading(true);
@@ -366,12 +365,10 @@
                 }
             };
             
-            // ⭐ 비로그인 앱 켜질때 호출
             React.useEffect(() => { 
                 fetchBookings(true); 
             }, []); 
             
-            // ⭐ 로그인 했을때 한번 더 호출
             React.useEffect(() => { 
                 if (user) fetchBookings(true); 
             }, [user]);
@@ -757,7 +754,7 @@
                                 </h2>
                                 <p className="text-sm text-slate-400 dark:text-slate-400 mt-2">이름과 사번을 정확히 입력해 주세요.</p>
                             </div>
-                            
+            
                             {/* --- [상태창] 현재 대여 가능 / 다음 예약 표시 영역 --- */}
                             <div className="mb-6 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-3 min-h-[64px] flex flex-col justify-center transition-all select-none">
                                 {isFetchingStatus ? (
@@ -840,12 +837,10 @@
                             <span 
                                 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
                                 onClick={() => {
-                                    // 열려있는 팝업 모두 닫기
                                     setShowMyBookings(false);
                                     setShowForm(false);
                                     setShowListModal(false);
                                     setShowNotice(false);
-                                    // 달력 뷰를 오늘 날짜의 '월간 달력'으로 초기화
                                     if (calendarInstanceRef.current) {
                                         calendarInstanceRef.current.today();
                                         calendarInstanceRef.current.changeView('dayGridMonth');
@@ -967,7 +962,7 @@
                         <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2 sm:p-4 h-full relative transition-colors duration-200 overflow-hidden">
                             
                             {/* 데스크탑용 상태창 (달력 헤더 today 옆에 겹쳐서 표시) */}
-                            <div className="hidden md:flex absolute top-[16px] sm:top-[24px] left-[170px] lg:left-[185px] z-[5] items-center gap-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-600 px-3 py-1.5 shadow-sm select-none transition-all">
+                            <div className="hidden md:flex absolute top-[16px] sm:top-[20px] left-[160px] lg:left-[170px] z-[5] items-center gap-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-600 px-3 py-1.5 shadow-sm select-none transition-all">
                                 {isFetchingStatus ? (
                                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-1 py-0.5">
                                         <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
