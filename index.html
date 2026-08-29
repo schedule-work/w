@@ -3,84 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DNS > 임상지원 근무표</title>
+    <title>DNS &gt; 임상지원 근무표</title>
     <link rel="icon" type="image/png" href="IMG_385.png?v=2">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --paper-bg: #fdfcf7; 
-            --ink-black: #111111;
+            --bg: #fdfaf4;
+            --surface: #ffffff;
+            --surface-alt: #f7f1e8;
+            --border: #e8ddcb;
+            --text: #3a332b;
+            --text-muted: #8a7f6f;
+            --accent: #c98a4b;
+            --accent-soft: #f1e0c8;
+            --shadow: 0 2px 10px rgba(120, 100, 70, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 22px;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--paper-bg);
-            color: var(--ink-black);
+            background-color: var(--bg);
+            color: var(--text);
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        .font-editorial {
-            font-family: 'Playfair Display', serif;
-        }
+        .border-editorial { border-color: var(--border); }
 
-        .border-editorial {
-            border-color: var(--ink-black);
-        }
-
+        /* ---------- nav ---------- */
         .main-tab {
             transition: all 0.2s ease;
             position: relative;
+            border-radius: var(--radius-lg);
         }
         .main-tab[data-active="true"] {
-            background-color: var(--ink-black);
-            color: var(--paper-bg);
+            background-color: var(--accent);
+            color: #fff;
         }
         .main-tab[data-active="false"]:hover {
-            background-color: #f0eee1;
+            background-color: var(--surface-alt);
         }
 
         .sub-menu-container {
             display: flex;
             overflow-x: auto;
             align-items: center;
-            -ms-overflow-style: none;  
-            scrollbar-width: none;  
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        .sub-menu-container::-webkit-scrollbar {
-            display: none; 
-        }
+        .sub-menu-container::-webkit-scrollbar { display: none; }
 
         .sub-btn {
             white-space: nowrap;
             position: relative;
-            padding: 0.25rem 0;
-            transition: color 0.2s;
+            padding: 0.35rem 0.9rem;
+            border-radius: var(--radius-lg);
+            transition: color 0.2s, background-color 0.2s;
         }
         .sub-btn[data-active="true"] {
             font-weight: 600;
+            color: var(--accent) !important;
+            background-color: var(--accent-soft);
         }
-        .sub-btn[data-active="true"]::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background-color: var(--ink-black);
+        .sub-btn[data-active="false"]:hover { background-color: var(--surface-alt); }
+
+        /* ---------- search bar ---------- */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .search-bar input {
+            flex: 0 0 320px;
+            max-width: 60vw;
+            padding: 8px 16px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .search-status { font-size: 0.7rem; color: var(--text-muted); }
+        .search-clear {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+        .search-clear:hover { background: var(--surface-alt); }
+
+        /* ---------- table rendering ---------- */
+        #main-view, #search-view { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+        #sheet-container { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+        .table-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .sheet-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .sheet-table th, .sheet-table td {
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            font-size: 12px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .freeze-row {
+            position: sticky;
+            height: 34px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .freeze-col {
+            position: sticky;
+            width: 78px;
+            min-width: 78px;
+            max-width: 78px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .calendar-block .freeze-col { width: 160px; min-width: 160px; max-width: 160px; }
+
+        .calendar-blocks {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            gap: 16px;
+            overflow: auto;
+            padding: 4px;
+        }
+        .calendar-block { display: flex; flex-direction: column; flex: 0 0 auto; max-width: 90vw; }
+        .calendar-block .table-scroll { flex: 1; min-height: 0; }
+        .calendar-block-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: var(--text);
         }
 
+        /* ---------- search results ---------- */
+        #search-view { overflow-y: auto; padding: 4px; }
+        #search-results { display: flex; flex-direction: column; gap: 16px; }
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            padding: 16px;
+        }
+        .result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+        .result-name { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+        .result-meta { font-size: 0.72rem; color: var(--text-muted); }
+        .today-callout {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 6px 14px;
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-sm);
+            background: var(--accent-soft);
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        .result-row-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+        .entry-chip {
+            flex: 0 0 auto;
+            min-width: 46px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            padding: 4px 6px;
+            text-align: center;
+            font-size: 0.7rem;
+        }
+        .entry-chip.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
+        .chip-date { font-size: 0.6rem; opacity: 0.75; margin-bottom: 2px; }
+        .search-empty { color: var(--text-muted); font-size: 0.9rem; padding: 32px; text-align: center; }
+
+        /* ---------- marquee ---------- */
         .marquee-container {
-            background-color: var(--ink-black);
-            color: var(--paper-bg);
+            background-color: var(--text);
+            color: var(--bg);
             overflow: hidden;
             white-space: nowrap;
         }
@@ -96,197 +225,711 @@
 </head>
 <body>
 
-    <header class="border-b border-editorial flex flex-col sm:flex-row justify-between items-center sm:items-end px-6 py-4 shrink-0">
+    <header class="border-b border-editorial flex flex-col sm:flex-row justify-between items-center sm:items-end px-6 py-4 shrink-0 bg-white">
         <div class="text-center sm:text-left mb-2 sm:mb-0">
-            <h1 class="font-editorial text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight uppercase leading-none">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight uppercase leading-none" style="color:var(--text)">
                 Shift Schedule
             </h1>
-            <p class="text-[10px] sm:text-xs tracking-[0.2em] uppercase mt-2 text-gray-600 font-medium">
-                Korea University Guro Hospital • Department of Nursing Service
+            <p class="text-[10px] sm:text-xs tracking-[0.2em] uppercase mt-2 font-medium" style="color:var(--text-muted)">
+                Korea University Guro Hospital &bull; Department of Nursing Service
             </p>
         </div>
         <div class="text-center sm:text-right flex flex-col justify-end">
             <p class="text-[10px] font-medium tracking-widest uppercase border-b border-editorial pb-1 mb-1">
                 임상지원간호팀
             </p>
-            <p class="text-[10px] text-gray-500 tracking-wider">
+            <p class="text-[10px] tracking-wider" style="color:var(--text-muted)">
                 VOL. 2026
             </p>
         </div>
     </header>
 
     <nav class="border-b border-editorial flex flex-col md:flex-row shrink-0 bg-white">
-        <div class="flex border-b md:border-b-0 md:border-r border-editorial shrink-0">
+        <div class="flex border-b md:border-b-0 md:border-r border-editorial shrink-0 p-1 gap-1">
             <button id="btn-group1" class="main-tab px-6 py-3 text-sm font-semibold tracking-wider" onclick="toggleGroup('group1', this)">
                 진료지원
             </button>
-            <button id="btn-group2" class="main-tab px-6 py-3 text-sm font-semibold tracking-wider border-l border-editorial" onclick="toggleGroup('group2', this)">
+            <button id="btn-group2" class="main-tab px-6 py-3 text-sm font-semibold tracking-wider" onclick="toggleGroup('group2', this)">
                 전담간호사
             </button>
         </div>
-        
-        <div class="flex-1 flex items-center px-6 py-2 overflow-hidden bg-[#faf9f5]">
-            <div id="group1-sub" class="sub-menu-container gap-6 hidden w-full"></div>
-            <div id="group2-sub" class="sub-menu-container gap-6 hidden w-full"></div>
+
+        <div class="flex-1 flex items-center px-6 py-2 overflow-hidden" style="background:var(--surface-alt)">
+            <div id="group1-sub" class="sub-menu-container gap-2 hidden w-full"></div>
+            <div id="group2-sub" class="sub-menu-container gap-2 hidden w-full"></div>
         </div>
     </nav>
 
-    <main class="flex-1 w-full relative z-0 bg-white">
-        <div id="loading-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-20 hidden">
-            <div class="font-editorial text-2xl italic tracking-widest animate-pulse border-b border-editorial pb-2">
+    <div class="search-bar shrink-0">
+        <input id="search-input" type="text" placeholder="이름 또는 사번으로 검색">
+        <span id="search-status" class="search-status"></span>
+        <span id="search-clear" class="search-clear hidden">✕ 지우기</span>
+    </div>
+
+    <main class="flex-1 w-full relative z-0 bg-white p-4 min-h-0">
+        <div id="loading-overlay" class="absolute inset-0 flex items-center justify-center z-20 hidden" style="background:rgba(253,250,244,0.85); backdrop-filter: blur(2px);">
+            <div class="text-lg italic tracking-widest animate-pulse border-b pb-2" style="color:var(--accent); border-color:var(--accent)">
                 Loading Data...
             </div>
         </div>
-        
-        <iframe id="sheet-frame" class="absolute inset-0 w-full h-full border-0" src=""></iframe>
+
+        <div id="main-view">
+            <div id="sheet-container"></div>
+        </div>
+
+        <div id="search-view" class="hidden">
+            <div id="search-results"></div>
+        </div>
     </main>
 
     <footer class="marquee-container py-1.5 shrink-0 text-[10px] tracking-[0.2em] uppercase font-light">
         <div class="marquee-content">
             <span class="mx-6">KOREA UNIVERSITY GURO HOSPITAL</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
             <span class="mx-6">KUMC</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
             <span class="mx-6">Department of Nursing Service</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
             <span class="mx-6">Shift Schedule</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
             <span class="mx-6">KOREA UNIVERSITY GURO HOSPITAL</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
             <span class="mx-6">KUMC</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
             <span class="mx-6">Department of Nursing Service</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
             <span class="mx-6">Shift Schedule</span>
-            <span class="mx-6 text-gray-500">|</span>
+            <span class="mx-6 opacity-50">|</span>
         </div>
     </footer>
 
     <script>
-        const sheetGroups = {
-            group1: {
-                name: "진료지원",
-                pubhtmlPrefix: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRyaIg5AxN1I8wD2Jrjr1o952ObrO_sHA3vL_Z1403dZLx9u9ooqmlLyuv5fQmeN6HnMmFdIRgCfi7_/pubhtml",
-                api: "https://script.google.com/macros/s/AKfycbz_FRqb7fbZwxNg_eWIXjDL15tW8iZGllcs7y6-qzZev7YtFHgRNJUSgm9n7352AZXJYw/exec"
-            },
-            group2: {
-                name: "전담간호사",
-                pubhtmlPrefix: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWjnyzr3Qa-UuQ9fRf3lwiRm4vVA7jLOPtJiYe9TU1C-n4dyHcqVk967ahJJWpG_SUbsXwfdBC8Rh-/pubhtml",
-                api: "https://script.google.com/macros/s/AKfycbzBpLXtYgjmbzRp74KMrdb2_tZTJYkAQn_aMRQ2AQau3IoofRKA42tzEKpOGn4Hhftmew/exec"
-            }
-        };
+    /* ============================== CONFIG ============================== */
+    const GROUPS = {
+        group1: {
+            name: "진료지원",
+            api: "https://script.google.com/macros/s/AKfycbz_FRqb7fbZwxNg_eWIXjDL15tW8iZGllcs7y6-qzZev7YtFHgRNJUSgm9n7352AZXJYw/exec"
+        },
+        group2: {
+            name: "전담간호사",
+            api: "https://script.google.com/macros/s/AKfycbzBpLXtYgjmbzRp74KMrdb2_tZTJYkAQn_aMRQ2AQau3IoofRKA42tzEKpOGn4Hhftmew/exec"
+        }
+    };
 
-        function toggleGroup(groupKey, buttonEl) {
-            document.getElementById('group1-sub').classList.add('hidden');
-            document.getElementById('group1-sub').classList.remove('flex');
-            document.getElementById('group2-sub').classList.add('hidden');
-            document.getElementById('group2-sub').classList.remove('flex');
-            
-            const container = document.getElementById(`${groupKey}-sub`);
-            container.classList.remove('hidden');
-            container.classList.add('flex');
+    // 알려진 9개 탭의 형태(shape). 새 탭이 생기면 detectShape()의 휴리스틱으로 폴백.
+    const SHEET_SHAPE = {
+        740884234: 'A',   // 진료지원 (2608)
+        33060022: 'A',    // 진료지원 (2609)
+        341912263: 'C',   // NS 담당 진료지원 간호사 및 Spine 보조기 업체
+        0: 'A',           // 채혈전담
+        882148533: 'A2',  // 프로시저팀
+        302779154: 'B',   // 드레싱 전담
+        2012649705: 'A',  // 중증외상최종치료센터
+        948328916: 'A2',  // 통합항암 전담
+        1970097519: 'C'   // NS 수술전담 - 토요일
+    };
 
-            document.querySelectorAll(".main-tab").forEach(btn => btn.dataset.active = "false");
-            buttonEl.dataset.active = "true";
+    const ROW_HEIGHT = 34;
 
-            if (container.childElementCount > 0) return;
+    /* ============================== STATE/CACHE ============================== */
+    const sheetCache = new Map();     // "group:gid" -> payload
+    const groupAllCache = new Map();  // group -> Promise<payload[]>
+    const searchIndex = [];           // PersonRecord[]
+    const searchIndexReady = { group1: false, group2: false };
+    let currentGroup = null, currentGid = null;
 
-            const loadingOverlay = document.getElementById("loading-overlay");
-            loadingOverlay.classList.remove("hidden");
+    /* ============================== API LAYER ============================== */
+    async function fetchSingleSheet(group, gid) {
+        const key = `${group}:${gid}`;
+        if (sheetCache.has(key)) return sheetCache.get(key);
+        const res = await fetch(`${GROUPS[group].api}?sheet=${gid}`);
+        const payload = await res.json();
+        sheetCache.set(key, payload);
+        return payload;
+    }
 
-            const { api, pubhtmlPrefix } = sheetGroups[groupKey];
-
-            fetch(api)
+    function ensureGroupIndexed(group) {
+        if (!groupAllCache.has(group)) {
+            const promise = fetch(`${GROUPS[group].api}?all=1`)
                 .then(res => res.json())
-                .then(sheets => {
-                    container.innerHTML = '';
-                    sheets.forEach(({ name, gid }, index) => {
-                        const btn = document.createElement("button");
-                        btn.textContent = name;
-                        
-                        btn.className = "sub-btn text-sm text-gray-600 hover:text-black";
-                        btn.dataset.active = "false";
-                        
-                        btn.onclick = () => {
-                            document.getElementById("sheet-frame").src = `${pubhtmlPrefix}?gid=${gid}&widget=true&headers=false`;
-                            
-                            document.querySelectorAll(".sub-btn").forEach(b => {
-                                b.dataset.active = "false";
-                                b.classList.remove("text-black");
-                                b.classList.add("text-gray-600");
-                            });
-                            btn.dataset.active = "true";
-                            btn.classList.remove("text-gray-600");
-                            btn.classList.add("text-black");
-                        };
-                        container.appendChild(btn);
-
-                        if (groupKey === 'group1' && index === 0) {
-                            btn.click();
-                        }
+                .then(list => {
+                    list.forEach(payload => {
+                        sheetCache.set(`${group}:${payload.gid}`, payload);
+                        indexSheet(group, payload);
                     });
+                    searchIndexReady[group] = true;
+                    updateSearchStatus();
+                    return list;
                 })
                 .catch(err => {
-                    container.innerHTML = "<p class='text-red-500 text-xs font-medium'>데이터를 불러오지 못했습니다.</p>";
-                    console.error(err);
-                })
-                .finally(() => {
-                    loadingOverlay.classList.add("hidden");
+                    console.error(`검색 인덱스 로드 실패 (${group})`, err);
+                    groupAllCache.delete(group);
                 });
+            groupAllCache.set(group, promise);
         }
+        return groupAllCache.get(group);
+    }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const groupKey = urlParams.get('group');
-            const sheetName = urlParams.get('sheet');
+    /* ============================== PARSING / SHAPE DETECTION ============================== */
+    function detectShape(payload) {
+        if (SHEET_SHAPE[payload.gid]) return SHEET_SHAPE[payload.gid];
+        const flat = payload.values.flat();
+        if (flat.some(v => /^\d{1,2}월\d{1,2}일$/.test(v))) return 'B';
+        const idHeaderHits = payload.values.filter(row => /^(근무자|사번|이름)$/.test((row[0] || '').trim())).length;
+        return idHeaderHits > 1 ? 'A2' : 'A';
+    }
 
-            if (!(groupKey && sheetName)) {
-                document.getElementById("btn-group1")?.click(); 
-                
-                fetch(sheetGroups.group1.api)
-                    .then(res => res.json())
-                    .then(sheets => {
-                        const first = sheets[0];
-                        if (first) {
-                            document.getElementById("sheet-frame").src =
-                                `${sheetGroups.group1.pubhtmlPrefix}?gid=${first.gid}&widget=true&headers=false`;
-                        }
-                    });
-            } else {
-                const targetGroupBtn = document.getElementById(`btn-${groupKey}`);
-                if(targetGroupBtn) targetGroupBtn.click();
-
-                if (sheetGroups[groupKey]) {
-                    fetch(sheetGroups[groupKey].api)
-                        .then(res => res.json())
-                        .then(sheets => {
-                            const match = sheets.find(s => s.name === sheetName);
-                            if (match) {
-                                document.getElementById("sheet-frame").src =
-                                    `${sheetGroups[groupKey].pubhtmlPrefix}?gid=${match.gid}&widget=true&headers=false`;
-                                
-                                setTimeout(() => {
-                                    const subContainer = document.getElementById(`${groupKey}-sub`);
-                                    const buttons = subContainer.getElementsByTagName('button');
-                                    for(let btn of buttons) {
-                                        if(btn.textContent === sheetName) {
-                                            document.querySelectorAll(".sub-btn").forEach(b => {
-                                                b.dataset.active = "false";
-                                                b.classList.remove("text-black");
-                                                b.classList.add("text-gray-600");
-                                            });
-                                            btn.dataset.active = "true";
-                                            btn.classList.remove("text-gray-600");
-                                            btn.classList.add("text-black");
-                                            break;
-                                        }
-                                    }
-                                }, 1000);
-                            }
-                        });
+    function buildMergeMap(merges) {
+        const mergeStart = new Map();
+        const mergedAway = new Set();
+        (merges || []).forEach(m => {
+            mergeStart.set(`${m.row},${m.col}`, m);
+            for (let r = m.row; r < m.row + m.numRows; r++) {
+                for (let c = m.col; c < m.col + m.numCols; c++) {
+                    if (r === m.row && c === m.col) continue;
+                    mergedAway.add(`${r},${c}`);
                 }
             }
         });
+        return { mergeStart, mergedAway };
+    }
+
+    function stripParen(s) { return String(s || '').replace(/\(.+?\)/g, '').trim(); }
+
+    function parseDateToken(token, state) {
+        const t = stripParen(token);
+        let m;
+        if ((m = t.match(/^(\d{1,2})월(\d{1,2})일$/))) return finalizeDate(+m[1], +m[2], state);
+        if ((m = t.match(/^(\d{1,2})\/(\d{1,2})$/))) return finalizeDate(+m[1], +m[2], state);
+        if ((m = t.match(/^(\d{1,2})$/)) && state.lastMonth != null) return finalizeDate(state.lastMonth, +m[1], state);
+        return null;
+    }
+
+    function finalizeDate(month, day, state) {
+        if (state.lastMonth != null && month < state.lastMonth - 1) {
+            state.yearOffset = (state.yearOffset || 0) + 1;
+        }
+        state.lastMonth = month;
+        const year = state.baseYear + (state.yearOffset || 0);
+        return new Date(year, month - 1, day);
+    }
+
+    function newDateState() {
+        return { lastMonth: null, yearOffset: 0, baseYear: new Date().getFullYear() };
+    }
+
+    function findBestHeaderRow(values, maxScan) {
+        maxScan = Math.min(maxScan || 5, values.length);
+        let best = { idx: 0, count: -1 };
+        for (let r = 0; r < maxScan; r++) {
+            const state = newDateState();
+            let count = 0;
+            values[r].forEach(cell => { if (parseDateToken(cell, state)) count++; });
+            if (count > best.count) best = { idx: r, count };
+        }
+        return best.idx;
+    }
+
+    function findHeaderInfo(values, headerRowIdx) {
+        const headerRow = values[headerRowIdx];
+        const dateCols = [];
+        const state = newDateState();
+        headerRow.forEach((cell, c) => {
+            const d = parseDateToken(cell, state);
+            if (d) dateCols.push({ col: c, date: d });
+        });
+        const firstDateCol = dateCols.length ? dateCols[0].col : headerRow.length;
+        return { dateCols, firstDateCol };
+    }
+
+    function findLabeledCol(headerRow, idColsEnd, regex) {
+        for (let c = 0; c < idColsEnd; c++) {
+            if (regex.test((headerRow[c] || '').trim())) return c;
+        }
+        return -1;
+    }
+
+    function entryFromCell(payload, r, c, date, raw) {
+        return {
+            date,
+            raw: raw !== undefined ? raw : (payload.values[r][c] || ''),
+            bg: payload.backgrounds[r][c],
+            color: payload.fontColors[r][c],
+            bold: payload.fontWeights[r][c] === 'bold'
+        };
+    }
+
+    function parseShapeA(payload, group) {
+        const { values } = payload;
+        const headerRowIdx = findBestHeaderRow(values, 5);
+        const { dateCols, firstDateCol } = findHeaderInfo(values, headerRowIdx);
+        if (!dateCols.length) return [];
+        const headerRow = values[headerRowIdx];
+        const idKeyCol = findLabeledCol(headerRow, firstDateCol, /사번/);
+        const idNameCol = findLabeledCol(headerRow, firstDateCol, /이름|근무자/);
+        const records = [];
+        for (let r = headerRowIdx + 1; r < values.length; r++) {
+            const row = values[r];
+            const name = idNameCol >= 0 ? (row[idNameCol] || '').trim() : '';
+            const key = idKeyCol >= 0 ? (row[idKeyCol] || '').trim() : '';
+            if (!name && !key) continue;
+            const entries = dateCols.map(({ col, date }) => entryFromCell(payload, r, col, date));
+            records.push({ personKey: key || name, personName: name || key, group, sheetName: payload.name, gid: payload.gid, entries });
+        }
+        return records;
+    }
+
+    function findBlockHeaders(values) {
+        const idxs = [];
+        values.forEach((row, r) => {
+            const c0 = (row[0] || '').trim();
+            if (!/^(근무자|사번|이름)$/.test(c0)) return;
+            const hasDate = row.some((cell, c) => c > 0 && /^\d{1,2}\s*\/\s*\d{1,2}|^\d{1,2}월\d{1,2}일/.test(String(cell || '').trim()));
+            if (hasDate) idxs.push(r);
+        });
+        return idxs;
+    }
+
+    function parseShapeA2(payload, group) {
+        const { values } = payload;
+        const blockHeaderIdxs = findBlockHeaders(values);
+        const records = [];
+        blockHeaderIdxs.forEach((headerRowIdx, i) => {
+            const endRow = i + 1 < blockHeaderIdxs.length ? blockHeaderIdxs[i + 1] : values.length;
+            const { dateCols, firstDateCol } = findHeaderInfo(values, headerRowIdx);
+            if (!dateCols.length) return;
+            const headerRow = values[headerRowIdx];
+            const idKeyCol = findLabeledCol(headerRow, firstDateCol, /사번/);
+            const idNameCol = findLabeledCol(headerRow, firstDateCol, /이름|근무자/);
+            for (let r = headerRowIdx + 1; r < endRow; r++) {
+                const row = values[r];
+                const name = idNameCol >= 0 ? (row[idNameCol] || '').trim() : '';
+                const key = idKeyCol >= 0 ? (row[idKeyCol] || '').trim() : '';
+                if (!name && !key) continue;
+                const entries = dateCols.map(({ col, date }) => entryFromCell(payload, r, col, date));
+                records.push({ personKey: key || name, personName: name || key, group, sheetName: payload.name, gid: payload.gid, entries });
+            }
+        });
+        return records;
+    }
+
+    function findCalendarBlocks(values, merges) {
+        return (merges || [])
+            .filter(m => m.row === 0)
+            .map(m => ({ title: values[0][m.col], startCol: m.col, width: m.numCols }));
+    }
+
+    function findBlockHeaderRows(values, block) {
+        let dowRow = -1, dateRow = -1;
+        const scanMax = Math.min(8, values.length);
+        for (let r = 0; r < scanMax; r++) {
+            const slice = values[r].slice(block.startCol, block.startCol + block.width);
+            if (dowRow === -1 && slice.some(v => /^(월|화|수|목|금|토|일)$/.test((v || '').trim()))) dowRow = r;
+            if (dowRow !== -1 && r > dowRow && slice.some(v => /^\d{1,2}월\d{1,2}일$/.test((v || '').trim()))) { dateRow = r; break; }
+        }
+        return { dowRow, dateRow };
+    }
+
+    function parseShapeB(payload, group) {
+        const { values, merges } = payload;
+        const blocks = findCalendarBlocks(values, merges);
+        const records = new Map();
+        blocks.forEach(block => {
+            const { dowRow, dateRow } = findBlockHeaderRows(values, block);
+            if (dowRow === -1 || dateRow === -1) return;
+            const dayCols = [];
+            for (let c = block.startCol; c < block.startCol + block.width; c++) {
+                const dow = (values[dowRow][c] || '').trim();
+                const dateTok = (values[dateRow][c] || '').trim();
+                const m = dateTok.match(/^(\d{1,2})월(\d{1,2})일$/);
+                if (/^(월|화|수|목|금|토|일)$/.test(dow) && m) {
+                    dayCols.push({ col: c, date: new Date(new Date().getFullYear(), +m[1] - 1, +m[2]) });
+                }
+            }
+            if (!dayCols.length) return;
+            const roomCol = block.startCol;
+            for (let r = dateRow + 1; r < values.length; r++) {
+                const roomLabel = (values[r][roomCol] || '').trim();
+                if (!roomLabel) continue;
+                dayCols.forEach(({ col, date }) => {
+                    const name = (values[r][col] || '').trim();
+                    if (!name) return;
+                    if (!records.has(name)) {
+                        records.set(name, { personKey: name, personName: name, group, sheetName: payload.name, gid: payload.gid, entries: [] });
+                    }
+                    records.get(name).entries.push(entryFromCell(payload, r, col, date, `${roomLabel} 담당`));
+                });
+            }
+        });
+        return Array.from(records.values());
+    }
+
+    function indexSheet(group, payload) {
+        const shape = detectShape(payload);
+        if (shape === 'C') return;
+        let records = [];
+        if (shape === 'A') records = parseShapeA(payload, group);
+        else if (shape === 'A2') records = parseShapeA2(payload, group);
+        else if (shape === 'B') records = parseShapeB(payload, group);
+        searchIndex.push(...records);
+    }
+
+    /* ============================== RENDERING ============================== */
+    function cellStyleAttr(payload, r, c) {
+        const bg = payload.backgrounds[r][c];
+        const color = payload.fontColors[r][c];
+        const bold = payload.fontWeights[r][c] === 'bold';
+        let style = '';
+        if (bg) style += `background-color:${bg};`;
+        if (color) style += `color:${color};`;
+        if (bold) style += `font-weight:700;`;
+        return style;
+    }
+
+    function renderGenericTable(container, payload) {
+        const { values, merges, frozenRows, frozenColumns, gid } = payload;
+        const { mergeStart, mergedAway } = buildMergeMap(merges);
+        const isIrregular = SHEET_SHAPE[gid] === 'C';
+        const freezeRows = frozenRows || (isIrregular ? 0 : 1);
+        const freezeCols = frozenColumns || (isIrregular ? 0 : 2);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'table-scroll';
+        const table = document.createElement('table');
+        table.className = 'sheet-table';
+
+        values.forEach((row, r) => {
+            const tr = document.createElement('tr');
+            row.forEach((cellVal, c) => {
+                const key = `${r},${c}`;
+                if (mergedAway.has(key)) return;
+                const isHeaderRow = r < freezeRows;
+                const isFreezeCol = c < freezeCols;
+                const el = document.createElement(isHeaderRow ? 'th' : 'td');
+                el.textContent = cellVal;
+                el.setAttribute('style', cellStyleAttr(payload, r, c));
+                const merge = mergeStart.get(key);
+                if (merge) {
+                    if (merge.numRows > 1) el.rowSpan = merge.numRows;
+                    if (merge.numCols > 1) el.colSpan = merge.numCols;
+                }
+                let z = 1;
+                if (isHeaderRow) { el.classList.add('freeze-row'); el.style.top = `${r * ROW_HEIGHT}px`; z = 20; }
+                if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = `${c * 78}px`; z = isHeaderRow ? 30 : 10; }
+                el.style.zIndex = String(z);
+                tr.appendChild(el);
+            });
+            table.appendChild(tr);
+        });
+
+        wrap.appendChild(table);
+        container.appendChild(wrap);
+    }
+
+    function renderStackedLinear(container, payload) {
+        const { values, merges } = payload;
+        const { mergeStart, mergedAway } = buildMergeMap(merges);
+        const blockHeaderIdxs = findBlockHeaders(values);
+        const blockHeaderSet = new Set(blockHeaderIdxs);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'table-scroll';
+        const table = document.createElement('table');
+        table.className = 'sheet-table';
+
+        let blockIndex = -1;
+        values.forEach((row, r) => {
+            if (blockHeaderSet.has(r)) blockIndex++;
+            const isHeaderRow = blockHeaderSet.has(r);
+            const tr = document.createElement('tr');
+            row.forEach((cellVal, c) => {
+                const key = `${r},${c}`;
+                if (mergedAway.has(key)) return;
+                const el = document.createElement(isHeaderRow ? 'th' : 'td');
+                el.textContent = cellVal;
+                el.setAttribute('style', cellStyleAttr(payload, r, c));
+                const merge = mergeStart.get(key);
+                if (merge) {
+                    if (merge.numRows > 1) el.rowSpan = merge.numRows;
+                    if (merge.numCols > 1) el.colSpan = merge.numCols;
+                }
+                const isFreezeCol = c === 0;
+                let z = 1;
+                if (isHeaderRow) { el.classList.add('freeze-row'); el.style.top = '0px'; z = 20 + blockIndex; }
+                if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = '0px'; z = isHeaderRow ? 100 + blockIndex : 10; }
+                el.style.zIndex = String(z);
+                tr.appendChild(el);
+            });
+            table.appendChild(tr);
+        });
+
+        wrap.appendChild(table);
+        container.appendChild(wrap);
+    }
+
+    function renderCalendarGrid(container, payload) {
+        const { values, merges } = payload;
+        const blocks = findCalendarBlocks(values, merges);
+        const wrap = document.createElement('div');
+        wrap.className = 'calendar-blocks';
+
+        blocks.forEach(block => {
+            const { dowRow, dateRow } = findBlockHeaderRows(values, block);
+            if (dowRow === -1) return;
+            const lastHeaderRow = dateRow !== -1 ? dateRow : dowRow;
+
+            const blockWrap = document.createElement('div');
+            blockWrap.className = 'calendar-block';
+            const title = document.createElement('div');
+            title.className = 'calendar-block-title';
+            title.textContent = block.title;
+            blockWrap.appendChild(title);
+
+            const scroll = document.createElement('div');
+            scroll.className = 'table-scroll';
+            const table = document.createElement('table');
+            table.className = 'sheet-table';
+
+            const appendRow = (r, isHeader) => {
+                const tr = document.createElement('tr');
+                for (let c = block.startCol; c < block.startCol + block.width; c++) {
+                    const el = document.createElement(isHeader ? 'th' : 'td');
+                    el.textContent = values[r][c] || '';
+                    el.setAttribute('style', cellStyleAttr(payload, r, c));
+                    const isFreezeCol = c === block.startCol;
+                    let z = 1;
+                    if (isHeader) { el.classList.add('freeze-row'); el.style.top = `${(r - dowRow) * ROW_HEIGHT}px`; z = 20; }
+                    if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = '0px'; z = isHeader ? 30 : 10; }
+                    el.style.zIndex = String(z);
+                    tr.appendChild(el);
+                }
+                table.appendChild(tr);
+            };
+
+            for (let r = dowRow; r <= lastHeaderRow; r++) appendRow(r, true);
+            for (let r = lastHeaderRow + 1; r < values.length; r++) {
+                const slice = values[r].slice(block.startCol, block.startCol + block.width);
+                if (slice.every(v => !v)) continue;
+                appendRow(r, false);
+            }
+
+            scroll.appendChild(table);
+            blockWrap.appendChild(scroll);
+            wrap.appendChild(blockWrap);
+        });
+
+        container.appendChild(wrap);
+    }
+
+    function renderSheetTable(container, payload) {
+        container.innerHTML = '';
+        if (payload.error) {
+            container.innerHTML = `<p class="text-red-500 text-xs p-4">시트를 불러오지 못했습니다.</p>`;
+            return;
+        }
+        const shape = detectShape(payload);
+        if (shape === 'B') renderCalendarGrid(container, payload);
+        else if (shape === 'A2') renderStackedLinear(container, payload);
+        else renderGenericTable(container, payload);
+    }
+
+    /* ============================== SEARCH ============================== */
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function getTodayKST() {
+        const now = new Date();
+        const d = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    function sameDay(a, b) {
+        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    function renderPersonCard(record, today) {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+
+        const todayEntry = record.entries.find(e => sameDay(e.date, today));
+        const header = document.createElement('div');
+        header.className = 'result-header';
+        header.innerHTML = `<span class="result-name">${escapeHtml(record.personName)}</span>
+            <span class="result-meta">${escapeHtml(record.personKey)} &middot; ${escapeHtml(GROUPS[record.group].name)} &middot; ${escapeHtml(record.sheetName)}</span>`;
+        card.appendChild(header);
+
+        if (todayEntry) {
+            const callout = document.createElement('div');
+            callout.className = 'today-callout';
+            callout.innerHTML = `오늘 근무: <strong>${escapeHtml(todayEntry.raw || '(공란)')}</strong>`;
+            card.appendChild(callout);
+        }
+
+        const rowWrap = document.createElement('div');
+        rowWrap.className = 'result-row-scroll';
+        [...record.entries].sort((a, b) => a.date - b.date).forEach(entry => {
+            const chip = document.createElement('div');
+            chip.className = 'entry-chip' + (sameDay(entry.date, today) ? ' is-today' : '');
+            chip.style.backgroundColor = entry.bg;
+            chip.style.color = entry.color;
+            if (entry.bold) chip.style.fontWeight = '700';
+            chip.innerHTML = `<div class="chip-date">${entry.date.getMonth() + 1}/${entry.date.getDate()}</div><div class="chip-val">${escapeHtml(entry.raw || '·')}</div>`;
+            rowWrap.appendChild(chip);
+        });
+        card.appendChild(rowWrap);
+        return card;
+    }
+
+    function renderSearchResults(query) {
+        const resultsEl = document.getElementById('search-results');
+        resultsEl.innerHTML = '';
+        const q = query.trim();
+        if (!q) return;
+        const matches = searchIndex.filter(r => r.personKey.includes(q) || r.personName.includes(q));
+        if (!matches.length) {
+            resultsEl.innerHTML = `<p class="search-empty">"${escapeHtml(q)}"에 대한 근무 기록을 찾을 수 없습니다.</p>`;
+            return;
+        }
+        const today = getTodayKST();
+        matches.forEach(record => resultsEl.appendChild(renderPersonCard(record, today)));
+    }
+
+    function updateSearchStatus() {
+        const statusEl = document.getElementById('search-status');
+        const ready = searchIndexReady.group1 && searchIndexReady.group2;
+        statusEl.textContent = ready ? '' : '검색 준비 중...';
+    }
+
+    function toggleSearchView(active) {
+        document.getElementById('main-view').classList.toggle('hidden', active);
+        document.getElementById('search-view').classList.toggle('hidden', !active);
+        document.getElementById('search-clear').classList.toggle('hidden', !active);
+    }
+
+    /* ============================== UI WIRING ============================== */
+    async function loadSheet(group, gid, btnEl) {
+        document.querySelectorAll('.sub-btn').forEach(b => { b.dataset.active = 'false'; });
+        if (btnEl) btnEl.dataset.active = 'true';
+        currentGroup = group; currentGid = gid;
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        loadingOverlay.classList.remove('hidden');
+        try {
+            const payload = await fetchSingleSheet(group, gid);
+            renderSheetTable(document.getElementById('sheet-container'), payload);
+        } catch (err) {
+            document.getElementById('sheet-container').innerHTML = '<p class="text-red-500 text-xs p-4">시트를 불러오지 못했습니다.</p>';
+            console.error(err);
+        } finally {
+            loadingOverlay.classList.add('hidden');
+        }
+    }
+
+    function toggleGroup(groupKey, buttonEl) {
+        document.getElementById('group1-sub').classList.add('hidden');
+        document.getElementById('group1-sub').classList.remove('flex');
+        document.getElementById('group2-sub').classList.add('hidden');
+        document.getElementById('group2-sub').classList.remove('flex');
+
+        const container = document.getElementById(`${groupKey}-sub`);
+        container.classList.remove('hidden');
+        container.classList.add('flex');
+
+        document.querySelectorAll('.main-tab').forEach(btn => btn.dataset.active = 'false');
+        buttonEl.dataset.active = 'true';
+
+        if (container.childElementCount > 0) return;
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        loadingOverlay.classList.remove('hidden');
+
+        fetch(GROUPS[groupKey].api)
+            .then(res => res.json())
+            .then(sheets => {
+                container.innerHTML = '';
+                sheets.forEach(({ name, gid }, index) => {
+                    const btn = document.createElement('button');
+                    btn.textContent = name;
+                    btn.className = 'sub-btn text-sm';
+                    btn.style.color = 'var(--text-muted)';
+                    btn.dataset.active = 'false';
+                    btn.onclick = () => loadSheet(groupKey, gid, btn);
+                    container.appendChild(btn);
+                    if (groupKey === 'group1' && index === 0) btn.click();
+                });
+            })
+            .catch(err => {
+                container.innerHTML = "<p class='text-red-500 text-xs font-medium'>데이터를 불러오지 못했습니다.</p>";
+                console.error(err);
+            })
+            .finally(() => {
+                loadingOverlay.classList.add('hidden');
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupKey = urlParams.get('group');
+        const sheetName = urlParams.get('sheet');
+
+        if (!(groupKey && sheetName)) {
+            document.getElementById('btn-group1')?.click();
+        } else {
+            const targetGroupBtn = document.getElementById(`btn-${groupKey}`);
+            if (targetGroupBtn) targetGroupBtn.click();
+
+            if (GROUPS[groupKey]) {
+                fetch(GROUPS[groupKey].api)
+                    .then(res => res.json())
+                    .then(sheets => {
+                        const match = sheets.find(s => s.name === sheetName);
+                        if (!match) return;
+                        loadSheet(groupKey, match.gid);
+                        setTimeout(() => {
+                            const subContainer = document.getElementById(`${groupKey}-sub`);
+                            for (const btn of subContainer.getElementsByTagName('button')) {
+                                if (btn.textContent === sheetName) {
+                                    document.querySelectorAll('.sub-btn').forEach(b => b.dataset.active = 'false');
+                                    btn.dataset.active = 'true';
+                                    break;
+                                }
+                            }
+                        }, 1000);
+                    });
+            }
+        }
+
+        updateSearchStatus();
+
+        const searchInput = document.getElementById('search-input');
+        let debounceTimer = null;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const q = searchInput.value.trim();
+                toggleSearchView(!!q);
+                if (q) renderSearchResults(q);
+            }, 150);
+        });
+        searchInput.addEventListener('focus', () => {
+            ensureGroupIndexed('group1');
+            ensureGroupIndexed('group2');
+        }, { once: true });
+
+        document.getElementById('search-clear').addEventListener('click', () => {
+            searchInput.value = '';
+            toggleSearchView(false);
+        });
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                ensureGroupIndexed('group1');
+                ensureGroupIndexed('group2');
+            }, 2500);
+        });
+    });
     </script>
 </body>
 </html>
