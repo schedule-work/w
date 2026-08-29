@@ -10,7 +10,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -38,21 +38,32 @@
             overflow: hidden;
         }
 
+        .font-editorial { font-family: 'Playfair Display', serif; }
         .border-editorial { border-color: var(--border); }
 
-        /* ---------- nav ---------- */
+        /* ---------- header ---------- */
+        .kicker {
+            font-size: 0.68rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* ---------- nav: editorial underline tabs ---------- */
         .main-tab {
-            transition: all 0.2s ease;
+            transition: color 0.2s ease, border-color 0.2s ease;
             position: relative;
-            border-radius: var(--radius-lg);
+            border-radius: 0;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
         }
         .main-tab[data-active="true"] {
-            background-color: var(--accent);
-            color: #fff;
+            border-bottom-color: var(--accent);
+            color: var(--accent);
         }
-        .main-tab[data-active="false"]:hover {
-            background-color: var(--surface-alt);
-        }
+        .main-tab[data-active="false"]:hover { color: var(--text); }
 
         .sub-menu-container {
             display: flex;
@@ -69,6 +80,7 @@
             padding: 0.35rem 0.9rem;
             border-radius: var(--radius-lg);
             transition: color 0.2s, background-color 0.2s;
+            color: var(--text-muted);
         }
         .sub-btn[data-active="true"] {
             font-weight: 600;
@@ -110,6 +122,24 @@
             border-radius: 999px;
         }
         .search-clear:hover { background: var(--surface-alt); }
+
+        /* ---------- editorial content header ---------- */
+        .content-kicker {
+            font-size: 0.68rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+        .content-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.35rem;
+            color: var(--text);
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
 
         /* ---------- table rendering ---------- */
         #main-view, #search-view { display: flex; flex-direction: column; min-height: 0; height: 100%; }
@@ -169,7 +199,7 @@
             color: var(--text);
         }
 
-        /* ---------- search results ---------- */
+        /* ---------- search results (editorial profile-card feel) ---------- */
         #search-view { overflow-y: auto; padding: 4px; }
         #search-results { display: flex; flex-direction: column; gap: 16px; }
         .result-card {
@@ -177,11 +207,17 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             box-shadow: var(--shadow);
-            padding: 16px;
+            padding: 18px 20px;
         }
-        .result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-        .result-name { font-size: 1.05rem; font-weight: 700; color: var(--text); }
-        .result-meta { font-size: 0.72rem; color: var(--text-muted); }
+        .result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .result-name {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text);
+        }
+        .result-meta { font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
         .today-callout {
             display: inline-block;
             margin-bottom: 12px;
@@ -204,7 +240,14 @@
         }
         .entry-chip.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
         .chip-date { font-size: 0.6rem; opacity: 0.75; margin-bottom: 2px; }
-        .search-empty { color: var(--text-muted); font-size: 0.9rem; padding: 32px; text-align: center; }
+        .search-empty {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 1rem;
+            padding: 40px;
+            text-align: center;
+        }
 
         /* ---------- marquee ---------- */
         .marquee-container {
@@ -225,14 +268,13 @@
 </head>
 <body>
 
-    <header class="border-b border-editorial flex flex-col sm:flex-row justify-between items-center sm:items-end px-6 py-4 shrink-0 bg-white">
+    <header class="border-b border-editorial flex flex-col sm:flex-row justify-between items-center sm:items-end px-6 py-5 shrink-0 bg-white">
         <div class="text-center sm:text-left mb-2 sm:mb-0">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight uppercase leading-none" style="color:var(--text)">
+            <p class="kicker mb-1">Korea University Guro Hospital &bull; Vol. 2026</p>
+            <h1 class="font-editorial text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-none" style="color:var(--text)">
                 Shift Schedule
             </h1>
-            <p class="text-[10px] sm:text-xs tracking-[0.2em] uppercase mt-2 font-medium" style="color:var(--text-muted)">
-                Korea University Guro Hospital &bull; Department of Nursing Service
-            </p>
+            <p class="kicker mt-2">Department of Nursing Service</p>
         </div>
         <div class="text-center sm:text-right flex flex-col justify-end">
             <p class="text-[10px] font-medium tracking-widest uppercase border-b border-editorial pb-1 mb-1">
@@ -245,7 +287,7 @@
     </header>
 
     <nav class="border-b border-editorial flex flex-col md:flex-row shrink-0 bg-white">
-        <div class="flex border-b md:border-b-0 md:border-r border-editorial shrink-0 p-1 gap-1">
+        <div class="flex border-b md:border-b-0 md:border-r border-editorial shrink-0 px-2">
             <button id="btn-group1" class="main-tab px-6 py-3 text-sm font-semibold tracking-wider" onclick="toggleGroup('group1', this)">
                 진료지원
             </button>
@@ -266,14 +308,16 @@
         <span id="search-clear" class="search-clear hidden">✕ 지우기</span>
     </div>
 
-    <main class="flex-1 w-full relative z-0 bg-white p-4 min-h-0">
+    <main class="flex-1 w-full relative z-0 bg-white p-4 sm:p-6 min-h-0">
         <div id="loading-overlay" class="absolute inset-0 flex items-center justify-center z-20 hidden" style="background:rgba(253,250,244,0.85); backdrop-filter: blur(2px);">
-            <div class="text-lg italic tracking-widest animate-pulse border-b pb-2" style="color:var(--accent); border-color:var(--accent)">
+            <div class="font-editorial italic text-lg tracking-widest animate-pulse border-b pb-2" style="color:var(--accent); border-color:var(--accent)">
                 Loading Data...
             </div>
         </div>
 
         <div id="main-view">
+            <div class="content-kicker" id="content-kicker">DNS &middot; SHIFT ROSTER</div>
+            <h2 class="content-title" id="content-title">근무표를 선택해 주세요</h2>
             <div id="sheet-container"></div>
         </div>
 
@@ -575,14 +619,39 @@
     }
 
     /* ============================== RENDERING ============================== */
-    function cellStyleAttr(payload, r, c) {
+    function borderCssFor(payload, r, c) {
+        const b = payload.borders && payload.borders[r] && payload.borders[r][c];
+        if (!b) return '';
+        let s = '';
+        ['top', 'bottom', 'left', 'right'].forEach(side => {
+            const v = b[side];
+            if (v) s += `border-${side}:${v.width}px ${v.style} ${v.color};`;
+        });
+        return s;
+    }
+
+    function cellStyleAttr(payload, r, c, opts) {
+        opts = opts || {};
         const bg = payload.backgrounds[r][c];
         const color = payload.fontColors[r][c];
         const bold = payload.fontWeights[r][c] === 'bold';
+        const italic = payload.fontStyles && payload.fontStyles[r][c] === 'italic';
+        const family = payload.fontFamilies && payload.fontFamilies[r][c];
+        const size = payload.fontSizes && payload.fontSizes[r][c];
+        const align = payload.horizontalAlignments && payload.horizontalAlignments[r][c];
         let style = '';
         if (bg) style += `background-color:${bg};`;
         if (color) style += `color:${color};`;
         if (bold) style += `font-weight:700;`;
+        if (italic) style += `font-style:italic;`;
+        if (family) style += `font-family:'${family}',sans-serif;`;
+        if (size) style += `font-size:${size}px;`;
+        if (align) style += `text-align:${String(align).toLowerCase()};`;
+        if (!opts.skipWrap) {
+            const wrap = payload.wraps && payload.wraps[r][c];
+            style += wrap ? 'white-space:normal;' : 'white-space:nowrap;';
+        }
+        style += borderCssFor(payload, r, c);
         return style;
     }
 
@@ -607,7 +676,7 @@
                 const isFreezeCol = c < freezeCols;
                 const el = document.createElement(isHeaderRow ? 'th' : 'td');
                 el.textContent = cellVal;
-                el.setAttribute('style', cellStyleAttr(payload, r, c));
+                el.setAttribute('style', cellStyleAttr(payload, r, c, { skipWrap: isHeaderRow || isFreezeCol }));
                 const merge = mergeStart.get(key);
                 if (merge) {
                     if (merge.numRows > 1) el.rowSpan = merge.numRows;
@@ -645,15 +714,15 @@
             row.forEach((cellVal, c) => {
                 const key = `${r},${c}`;
                 if (mergedAway.has(key)) return;
+                const isFreezeCol = c === 0;
                 const el = document.createElement(isHeaderRow ? 'th' : 'td');
                 el.textContent = cellVal;
-                el.setAttribute('style', cellStyleAttr(payload, r, c));
+                el.setAttribute('style', cellStyleAttr(payload, r, c, { skipWrap: isHeaderRow || isFreezeCol }));
                 const merge = mergeStart.get(key);
                 if (merge) {
                     if (merge.numRows > 1) el.rowSpan = merge.numRows;
                     if (merge.numCols > 1) el.colSpan = merge.numCols;
                 }
-                const isFreezeCol = c === 0;
                 let z = 1;
                 if (isHeaderRow) { el.classList.add('freeze-row'); el.style.top = '0px'; z = 20 + blockIndex; }
                 if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = '0px'; z = isHeaderRow ? 100 + blockIndex : 10; }
@@ -693,10 +762,10 @@
             const appendRow = (r, isHeader) => {
                 const tr = document.createElement('tr');
                 for (let c = block.startCol; c < block.startCol + block.width; c++) {
+                    const isFreezeCol = c === block.startCol;
                     const el = document.createElement(isHeader ? 'th' : 'td');
                     el.textContent = values[r][c] || '';
-                    el.setAttribute('style', cellStyleAttr(payload, r, c));
-                    const isFreezeCol = c === block.startCol;
+                    el.setAttribute('style', cellStyleAttr(payload, r, c, { skipWrap: isHeader || isFreezeCol }));
                     let z = 1;
                     if (isHeader) { el.classList.add('freeze-row'); el.style.top = `${(r - dowRow) * ROW_HEIGHT}px`; z = 20; }
                     if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = '0px'; z = isHeader ? 30 : 10; }
@@ -819,6 +888,8 @@
         try {
             const payload = await fetchSingleSheet(group, gid);
             renderSheetTable(document.getElementById('sheet-container'), payload);
+            document.getElementById('content-kicker').textContent = `${GROUPS[group].name} · DNS SHIFT ROSTER`;
+            document.getElementById('content-title').textContent = payload.name || payload.error || '';
         } catch (err) {
             document.getElementById('sheet-container').innerHTML = '<p class="text-red-500 text-xs p-4">시트를 불러오지 못했습니다.</p>';
             console.error(err);
@@ -853,7 +924,6 @@
                     const btn = document.createElement('button');
                     btn.textContent = name;
                     btn.className = 'sub-btn text-sm';
-                    btn.style.color = 'var(--text-muted)';
                     btn.dataset.active = 'false';
                     btn.onclick = () => loadSheet(groupKey, gid, btn);
                     container.appendChild(btn);
