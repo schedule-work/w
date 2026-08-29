@@ -8,13 +8,13 @@
 
     <style>
         :root {
-            --bg: #fbfaf7;
+            --bg: #f5f2ec;
             --soft: #f1eee8;
-            --ink: #24211d;
+            --ink: #1f252d;
             --muted: #817a70;
             --line: #e5dfd5;
-            --accent: #b84d32;
-            --accent-soft: #f7e8e1;
+            --accent: #d35d3f;
+            --accent-soft: #fae8e1;
             --shadow: 0 1px 2px rgba(25,31,40,0.04), 0 10px 28px rgba(25,31,40,0.06);
             --radius-sm: 10px;
             --radius-md: 16px;
@@ -26,6 +26,7 @@
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             font-variant-numeric: tabular-nums;
             background-color: var(--bg);
+            background-image: radial-gradient(circle at 85% -20%, rgba(211,93,63,0.10), transparent 34rem);
             color: var(--ink);
             height: 100vh;
             display: flex;
@@ -51,10 +52,10 @@
             display: flex;
             align-items: baseline;
             gap: 10px;
-            padding: 22px 28px 14px;
-            background: var(--bg);
+            padding: 28px 28px 18px;
+            background: rgba(245,242,236,0.88);
         }
-        .wordmark { font-family: Georgia, serif; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); }
+        .wordmark { font-family: Georgia, serif; font-size: 1.55rem; font-weight: 700; letter-spacing: -0.04em; color: var(--ink); }
         .brand-sub { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
 
         /* ---------- group tabs: prominent, can't-miss segmented control ---------- */
@@ -63,7 +64,7 @@
             gap: 10px;
             padding: 0 28px 16px;
             border-bottom: 1px solid var(--line);
-            background: var(--bg);
+            background: rgba(245,242,236,0.88);
         }
         .tab {
             font-size: 0.84rem;
@@ -71,12 +72,12 @@
             color: var(--muted);
             background: var(--soft);
             padding: 11px 24px;
-            border-radius: 4px;
-            border: none;
+            border-radius: 999px;
+            border: 1px solid transparent;
             transition: color 0.15s ease, background-color 0.15s ease;
         }
-        .tab[data-active="true"] { color: #fff; background: var(--ink); }
-        .tab[data-active="false"]:hover { background: #eceef1; color: var(--ink); }
+        .tab[data-active="true"] { color: #fff; background: var(--ink); box-shadow: 0 5px 14px rgba(31,37,45,0.16); }
+        .tab[data-active="false"]:hover { background: #e7e1d8; color: var(--ink); }
 
         /* ---------- search ---------- */
         .search-wrap {
@@ -84,15 +85,16 @@
             align-items: center;
             gap: 12px;
             padding: 16px 28px 12px;
-            background: var(--bg);
+            background: rgba(245,242,236,0.88);
         }
         .search-box { position: relative; flex: 0 0 420px; max-width: 70vw; }
         .search-box input {
             width: 100%;
             border: none;
             outline: none;
-            background: var(--soft);
-            border-radius: 3px;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid var(--line);
+            border-radius: 999px;
             padding: 12px 40px 12px 14px;
             font-family: inherit;
             font-size: 0.88rem;
@@ -113,7 +115,7 @@
             top: calc(100% + 6px);
             left: 0;
             right: 0;
-            background: var(--bg);
+            background: #fffdfa;
             border-radius: var(--radius-md);
             box-shadow: var(--shadow);
             border: 1px solid var(--line);
@@ -139,14 +141,19 @@
             flex-shrink: 0; white-space: nowrap;
             font-size: 0.8rem; font-weight: 700;
             padding: 8px 14px; border-radius: 3px;
-            background: var(--soft); color: var(--muted);
+            background: rgba(255,255,255,0.72); color: var(--muted);
+            border: 1px solid var(--line);
         }
-        .chip[data-active="true"] { background: var(--ink); color: #fff; }
+        .chip[data-active="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
         .chip[data-active="false"]:hover { background: #eceef1; }
 
         /* ---------- main area ---------- */
-        .main-area { padding: 12px 28px 24px; display: flex; flex-direction: column; }
-        #sheet-container { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+        .main-area { padding: 10px 28px 24px; display: flex; flex-direction: column; overflow: hidden; }
+        #sheet-container { flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+        .sheet-heading { flex: 0 0 auto; padding: 6px 0 14px; }
+        .sheet-kicker { color: var(--accent); font-size: 0.67rem; font-weight: 800; letter-spacing: 0.16em; }
+        .sheet-heading h1 { margin: 3px 0 2px; font-family: Georgia, serif; font-size: clamp(1.55rem, 3vw, 2.35rem); line-height: 1.1; letter-spacing: -0.045em; }
+        .sheet-meta { color: var(--muted); font-size: 0.72rem; }
 
         .loading-overlay {
             position: absolute; inset: 0; z-index: 20;
@@ -159,13 +166,15 @@
         .table-scroll {
             flex: 1;
             min-height: 0;
+            min-width: 0;
+            width: 100%;
             overflow: auto;
             border-radius: 12px;
             border: 1px solid var(--grid);
             box-shadow: 0 1px 0 rgba(36,33,29,0.04);
             background: var(--bg);
         }
-        .sheet-table { border-collapse: separate; border-spacing: 0; }
+        .sheet-table { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: max-content; min-width: 100%; }
         .sheet-table th, .sheet-table td {
             border: 1px solid var(--grid);
             padding: 6px 10px;
@@ -175,7 +184,6 @@
         }
         .freeze-row {
             position: sticky;
-            height: 36px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -183,15 +191,12 @@
         }
         .freeze-col {
             position: sticky;
-            width: 84px;
-            min-width: 84px;
-            max-width: 84px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             background: var(--bg);
         }
-        .calendar-block .freeze-col { width: 168px; min-width: 168px; max-width: 168px; }
+        .calendar-block .freeze-col { min-width: 0; max-width: none; }
 
         .calendar-blocks {
             flex: 1;
@@ -219,6 +224,15 @@
             text-align: center;
             border-top: 1px solid var(--line);
             background: var(--bg);
+        }
+        @media (max-width: 720px) {
+            .topbar, .tabs-row, .search-wrap, .chips-wrap, .main-area { padding-left: 16px; padding-right: 16px; }
+            .topbar { padding-top: 18px; }
+            .brand-sub { display: none; }
+            .search-box { flex-basis: 100%; max-width: none; }
+            .search-wrap { flex-wrap: wrap; }
+            .sheet-heading { padding-top: 2px; }
+            .sheet-heading h1 { font-size: 1.7rem; }
         }
     </style>
 </head>
@@ -250,9 +264,14 @@
 
     <main class="flex-1 w-full relative z-0 main-area min-h-0">
         <div id="loading-overlay" class="loading-overlay hidden">
-            <div class="loading-text animate-pulse">Loading...</div>
+            <div class="loading-text animate-pulse">Loading schedule…</div>
         </div>
 
+        <section class="sheet-heading" aria-live="polite">
+            <div class="sheet-kicker">DNS / MONTHLY ROSTER</div>
+            <h1 id="sheet-title">근무표를 선택하세요</h1>
+            <div id="sheet-meta" class="sheet-meta">실시간 Google Sheets 데이터</div>
+        </section>
         <div id="sheet-container"></div>
     </main>
 
@@ -299,10 +318,11 @@
     let loadSequence = 0;
 
     /* ============================== API LAYER ============================== */
-    async function fetchSingleSheet(group, gid) {
-        const key = `${group}:${gid}`;
+    async function fetchSingleSheet(group, gid, mode = 'full') {
+        const key = `${group}:${gid}:${mode}`;
         if (sheetCache.has(key)) return sheetCache.get(key);
-        const res = await fetch(`${GROUPS[group].api}?sheet=${gid}`, { cache: 'no-store' });
+        const query = mode === 'lite' ? `?sheet=${gid}&lite=1` : `?sheet=${gid}`;
+        const res = await fetch(`${GROUPS[group].api}${query}`, { cache: 'no-store' });
         if (!res.ok) throw new Error(`시트 요청 실패: ${res.status}`);
         const payload = await res.json();
         sheetCache.set(key, payload);
@@ -330,6 +350,8 @@
                     list.forEach(payload => indexSheet(group, payload));
                     searchIndexReady[group] = true;
                     updateSearchStatus();
+                    const activeQuery = document.getElementById('search-input')?.value.trim();
+                    if (activeQuery) renderSearchDropdown(activeQuery);
                     return list;
                 })
                 .catch(err => {
@@ -836,7 +858,8 @@
     function updateSearchStatus() {
         const statusEl = document.getElementById('search-status');
         const ready = searchIndexReady.group1 && searchIndexReady.group2;
-        statusEl.textContent = ready ? '' : '검색 준비 중...';
+        const partial = searchIndexReady.group1 || searchIndexReady.group2;
+        statusEl.textContent = ready || partial ? '' : '검색 준비 중…';
     }
 
     function renderSearchDropdown(query) {
@@ -847,8 +870,8 @@
         const matches = searchIndex.filter(r => r.personKey.includes(q) || r.personName.includes(q));
         dropdown.innerHTML = '';
         if (!matches.length) {
-            const ready = searchIndexReady.group1 && searchIndexReady.group2;
-            dropdown.innerHTML = `<div class="search-dropdown-empty">${ready ? `"${escapeHtml(q)}"에 대한 근무 기록을 찾을 수 없습니다.` : '검색 준비 중...'}</div>`;
+            const ready = searchIndexReady.group1 || searchIndexReady.group2;
+            dropdown.innerHTML = `<div class="search-dropdown-empty">${ready ? `"${escapeHtml(q)}"에 대한 근무 기록을 찾을 수 없습니다.` : '검색 준비 중…'}</div>`;
             dropdown.classList.remove('hidden');
             return;
         }
@@ -919,7 +942,7 @@
         if (matchBtn) matchBtn.dataset.active = 'true';
 
         await loadSheet(record.group, record.gid, matchBtn);
-        const payload = sheetCache.get(`${record.group}:${record.gid}`);
+        const payload = sheetCache.get(`${record.group}:${record.gid}:full`);
         highlightPerson(document.getElementById('sheet-container'), record, detectShape(payload));
     }
 
@@ -933,8 +956,16 @@
         const loadingOverlay = document.getElementById('loading-overlay');
         loadingOverlay.classList.remove('hidden');
         try {
-            const payload = await fetchSingleSheet(group, gid);
+            const litePayload = await fetchSingleSheet(group, gid, 'lite');
             if (sequence !== loadSequence) return;
+            updateSheetHeading(group, litePayload);
+            renderSheetTable(document.getElementById('sheet-container'), litePayload);
+            loadingOverlay.classList.add('hidden');
+
+            // 빠른 첫 화면을 보여준 뒤 원본 서식(폰트·정렬·테두리)을 보강한다.
+            const payload = await fetchSingleSheet(group, gid, 'full');
+            if (sequence !== loadSequence) return;
+            updateSheetHeading(group, payload);
             renderSheetTable(document.getElementById('sheet-container'), payload);
         } catch (err) {
             document.getElementById('sheet-container').innerHTML = '<p class="text-red-500 text-xs p-4">시트를 불러오지 못했습니다.</p>';
@@ -942,6 +973,11 @@
         } finally {
             if (sequence === loadSequence) loadingOverlay.classList.add('hidden');
         }
+    }
+
+    function updateSheetHeading(group, payload) {
+        document.getElementById('sheet-title').textContent = payload.name || GROUPS[group].name;
+        document.getElementById('sheet-meta').textContent = `${GROUPS[group].name} · ${payload.numRows || 0} rows · Google Sheets format`;
     }
 
     function toggleGroup(groupKey, buttonEl) {
