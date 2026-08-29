@@ -44,30 +44,34 @@
         /* ---------- topbar ---------- */
         .topbar {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
+            align-items: baseline;
             gap: 10px;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--line);
+            padding: 16px 24px 12px;
             background: var(--bg);
         }
-        .brand { display: flex; align-items: baseline; gap: 10px; }
         .wordmark { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; color: var(--ink); }
         .brand-sub { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
 
-        .tabs { display: flex; gap: 22px; }
-        .tab {
-            font-size: 0.86rem;
-            font-weight: 600;
-            color: var(--muted);
-            background: transparent;
-            padding-bottom: 7px;
-            border-bottom: 2px solid transparent;
-            transition: color 0.15s ease, border-color 0.15s ease;
+        /* ---------- group tabs: prominent, can't-miss segmented control ---------- */
+        .tabs-row {
+            display: flex;
+            gap: 10px;
+            padding: 0 24px 16px;
+            border-bottom: 1px solid var(--line);
+            background: var(--bg);
         }
-        .tab[data-active="true"] { color: var(--ink); border-bottom-color: var(--accent); }
-        .tab[data-active="false"]:hover { color: var(--ink); }
+        .tab {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--muted);
+            background: var(--soft);
+            padding: 11px 24px;
+            border-radius: 999px;
+            border: none;
+            transition: color 0.15s ease, background-color 0.15s ease;
+        }
+        .tab[data-active="true"] { color: #fff; background: var(--ink); }
+        .tab[data-active="false"]:hover { background: #eceef1; color: var(--ink); }
 
         /* ---------- search ---------- */
         .search-wrap {
@@ -99,6 +103,26 @@
         .search-clear:hover { color: var(--ink); }
         .search-status { font-size: 0.7rem; color: var(--muted); }
 
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--line);
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 30;
+        }
+        .search-dropdown-item { padding: 10px 16px; cursor: pointer; }
+        .search-dropdown-item:hover { background: var(--soft); }
+        .search-dropdown-item .n { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+        .search-dropdown-item .n .k { color: var(--muted); font-weight: 600; margin-left: 6px; }
+        .search-dropdown-item .m { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+        .search-dropdown-empty { padding: 16px; font-size: 0.8rem; color: var(--muted); text-align: center; }
+
         /* ---------- sheet chips ---------- */
         .chips-wrap { padding: 0 24px 14px; }
         .chips {
@@ -115,25 +139,8 @@
         .chip[data-active="true"] { background: var(--ink); color: #fff; }
         .chip[data-active="false"]:hover { background: #eceef1; }
 
-        /* ---------- today hero ---------- */
-        .today-hero {
-            margin: 0 0 16px;
-            background: var(--accent-soft);
-            border-radius: var(--radius-lg);
-            padding: 16px 20px;
-        }
-        .today-hero .hero-label { font-size: 0.76rem; font-weight: 800; color: var(--accent); margin-bottom: 10px; }
-        .today-hero .hero-people { display: flex; gap: 8px; flex-wrap: wrap; }
-        .hero-chip {
-            background: #fff; border-radius: 999px; padding: 6px 14px;
-            font-size: 0.8rem; font-weight: 700; color: var(--ink);
-        }
-        .hero-chip b { color: var(--accent); font-weight: 800; margin-left: 5px; }
-        .hero-chip.muted { background: transparent; color: var(--muted); font-weight: 600; }
-
         /* ---------- main area ---------- */
-        .main-area { padding: 8px 24px 24px; }
-        #main-view, #search-view { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+        .main-area { padding: 12px 24px 24px; display: flex; flex-direction: column; }
         #sheet-container { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
         .loading-overlay {
@@ -193,40 +200,10 @@
         .calendar-block .table-scroll { flex: 1; min-height: 0; }
         .calendar-block-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; color: var(--ink); }
 
-        /* ---------- search results ---------- */
-        #search-view { overflow-y: auto; }
-        #search-results { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
-        .result-card {
-            background: var(--bg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            padding: 18px 20px;
-        }
-        .result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-        .result-name { font-weight: 800; font-size: 1rem; color: var(--ink); }
-        .result-meta { font-size: 0.74rem; color: var(--muted); font-weight: 600; }
-        .today-callout {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 14px;
-            padding: 12px 16px;
-            border-radius: 14px;
-            background: var(--accent-soft);
-            font-size: 0.85rem;
-            color: var(--ink);
-        }
-        .today-callout strong { color: var(--accent); font-weight: 800; }
-        .result-row-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-        .entry-chip {
-            flex: 0 0 auto;
-            min-width: 44px;
-            border-radius: 10px;
-            padding: 6px 8px;
-            text-align: center;
-            font-size: 0.72rem;
-        }
-        .entry-chip.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
-        .chip-date { font-size: 0.6rem; opacity: 0.7; margin-bottom: 2px; }
-        .search-empty { font-weight: 600; color: var(--muted); font-size: 0.95rem; padding: 48px; text-align: center; }
+        /* ---------- search jump-and-highlight ---------- */
+        tr.search-highlight td, tr.search-highlight th { box-shadow: inset 0 0 0 2px var(--accent); }
+        td.search-highlight { box-shadow: inset 0 0 0 2px var(--accent); }
+        .search-highlight-cell { box-shadow: inset 0 0 0 3px var(--accent) !important; }
 
         /* ---------- footer ---------- */
         .footer {
@@ -243,20 +220,20 @@
 <body>
 
     <header class="topbar shrink-0">
-        <div class="brand">
-            <span class="wordmark">Shift Schedule</span>
-            <span class="brand-sub">DNS &middot; Korea University Guro Hospital</span>
-        </div>
-        <div class="tabs">
-            <button id="btn-group1" class="tab" data-active="false" onclick="toggleGroup('group1', this)">진료지원</button>
-            <button id="btn-group2" class="tab" data-active="false" onclick="toggleGroup('group2', this)">전담간호사</button>
-        </div>
+        <span class="wordmark">Shift Schedule</span>
+        <span class="brand-sub">DNS &middot; Korea University Guro Hospital</span>
     </header>
+
+    <nav class="tabs-row shrink-0">
+        <button id="btn-group1" class="tab" data-active="false" onclick="toggleGroup('group1', this)">진료지원</button>
+        <button id="btn-group2" class="tab" data-active="false" onclick="toggleGroup('group2', this)">전담간호사</button>
+    </nav>
 
     <div class="search-wrap shrink-0">
         <div class="search-box">
-            <input id="search-input" type="text" placeholder="이름 또는 사번으로 검색">
+            <input id="search-input" type="text" placeholder="이름 또는 사번으로 검색" autocomplete="off">
             <span id="search-clear" class="search-clear hidden">&#10005;</span>
+            <div id="search-dropdown" class="search-dropdown hidden"></div>
         </div>
         <span id="search-status" class="search-status"></span>
     </div>
@@ -271,14 +248,7 @@
             <div class="loading-text animate-pulse">Loading...</div>
         </div>
 
-        <div id="main-view">
-            <div id="today-hero" class="today-hero hidden"></div>
-            <div id="sheet-container"></div>
-        </div>
-
-        <div id="search-view" class="hidden">
-            <div id="search-results"></div>
-        </div>
+        <div id="sheet-container"></div>
     </main>
 
     <footer class="footer shrink-0">
@@ -601,6 +571,18 @@
         const freezeRows = frozenRows || (isIrregular ? 0 : 1);
         const freezeCols = frozenColumns || (isIrregular ? 0 : 2);
 
+        // 검색 이동 시 행/셀을 찾아 하이라이트하기 위한 사람열/날짜열 태깅 (표 아닌 시트는 생략)
+        let dateColMap = new Map();
+        let idKeyCol = -1, idNameCol = -1;
+        if (!isIrregular) {
+            const headerRowIdx = findBestHeaderRow(values, 5);
+            const { dateCols, firstDateCol } = findHeaderInfo(values, headerRowIdx);
+            dateCols.forEach(({ col, date }) => dateColMap.set(col, isoDate(date)));
+            const headerRow = values[headerRowIdx];
+            idKeyCol = findLabeledCol(headerRow, firstDateCol, /사번/);
+            idNameCol = findLabeledCol(headerRow, firstDateCol, /이름|근무자/);
+        }
+
         const wrap = document.createElement('div');
         wrap.className = 'table-scroll';
         const table = document.createElement('table');
@@ -608,6 +590,11 @@
 
         values.forEach((row, r) => {
             const tr = document.createElement('tr');
+            if (r >= freezeRows && !isIrregular) {
+                const key = idKeyCol >= 0 ? (row[idKeyCol] || '').trim() : '';
+                const name = idNameCol >= 0 ? (row[idNameCol] || '').trim() : '';
+                if (key || name) { tr.dataset.personKey = key || name; tr.dataset.personName = name || key; }
+            }
             row.forEach((cellVal, c) => {
                 const key = `${r},${c}`;
                 if (mergedAway.has(key)) return;
@@ -625,6 +612,7 @@
                 if (isHeaderRow) { el.classList.add('freeze-row'); el.style.top = `${r * ROW_HEIGHT}px`; z = 20; }
                 if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = `${c * COL_WIDTH}px`; z = isHeaderRow ? 30 : 10; }
                 el.style.zIndex = String(z);
+                if (dateColMap.has(c)) el.dataset.date = dateColMap.get(c);
                 tr.appendChild(el);
             });
             table.appendChild(tr);
@@ -640,16 +628,34 @@
         const blockHeaderIdxs = findBlockHeaders(values);
         const blockHeaderSet = new Set(blockHeaderIdxs);
 
+        // 블록(월)별로 날짜열/사람열 정보를 미리 계산 (검색 이동 시 하이라이트용)
+        const blockInfo = new Map();
+        blockHeaderIdxs.forEach(headerRowIdx => {
+            const { dateCols, firstDateCol } = findHeaderInfo(values, headerRowIdx);
+            const dateColMap = new Map();
+            dateCols.forEach(({ col, date }) => dateColMap.set(col, isoDate(date)));
+            const headerRow = values[headerRowIdx];
+            const idKeyCol = findLabeledCol(headerRow, firstDateCol, /사번/);
+            const idNameCol = findLabeledCol(headerRow, firstDateCol, /이름|근무자/);
+            blockInfo.set(headerRowIdx, { dateColMap, idKeyCol, idNameCol });
+        });
+
         const wrap = document.createElement('div');
         wrap.className = 'table-scroll';
         const table = document.createElement('table');
         table.className = 'sheet-table';
 
         let blockIndex = -1;
+        let currentInfo = null;
         values.forEach((row, r) => {
-            if (blockHeaderSet.has(r)) blockIndex++;
+            if (blockHeaderSet.has(r)) { blockIndex++; currentInfo = blockInfo.get(r); }
             const isHeaderRow = blockHeaderSet.has(r);
             const tr = document.createElement('tr');
+            if (!isHeaderRow && currentInfo) {
+                const key = currentInfo.idKeyCol >= 0 ? (row[currentInfo.idKeyCol] || '').trim() : '';
+                const name = currentInfo.idNameCol >= 0 ? (row[currentInfo.idNameCol] || '').trim() : '';
+                if (key || name) { tr.dataset.personKey = key || name; tr.dataset.personName = name || key; }
+            }
             row.forEach((cellVal, c) => {
                 const key = `${r},${c}`;
                 if (mergedAway.has(key)) return;
@@ -666,6 +672,7 @@
                 if (isHeaderRow) { el.classList.add('freeze-row'); el.style.top = '0px'; z = 20 + blockIndex; }
                 if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = '0px'; z = isHeaderRow ? 100 + blockIndex : 10; }
                 el.style.zIndex = String(z);
+                if (currentInfo && currentInfo.dateColMap.has(c)) el.dataset.date = currentInfo.dateColMap.get(c);
                 tr.appendChild(el);
             });
             table.appendChild(tr);
@@ -685,6 +692,19 @@
             const { dowRow, dateRow } = findBlockHeaderRows(values, block);
             if (dowRow === -1) return;
             const lastHeaderRow = dateRow !== -1 ? dateRow : dowRow;
+
+            // 요일열별 날짜 매핑 (검색 이동 시 이름 셀 하이라이트용)
+            const dayColsMap = new Map();
+            if (dateRow !== -1) {
+                for (let c = block.startCol; c < block.startCol + block.width; c++) {
+                    const dow = (values[dowRow][c] || '').trim();
+                    const dateTok = (values[dateRow][c] || '').trim();
+                    const m = dateTok.match(/^(\d{1,2})월(\d{1,2})일$/);
+                    if (/^(월|화|수|목|금|토|일)$/.test(dow) && m) {
+                        dayColsMap.set(c, isoDate(new Date(new Date().getFullYear(), +m[1] - 1, +m[2])));
+                    }
+                }
+            }
 
             const blockWrap = document.createElement('div');
             blockWrap.className = 'calendar-block';
@@ -709,6 +729,11 @@
                     if (isHeader) { el.classList.add('freeze-row'); el.style.top = `${(r - dowRow) * ROW_HEIGHT}px`; z = 20; }
                     if (isFreezeCol) { el.classList.add('freeze-col'); el.style.left = '0px'; z = isHeader ? 30 : 10; }
                     el.style.zIndex = String(z);
+                    if (!isHeader && !isFreezeCol) {
+                        if (dayColsMap.has(c)) el.dataset.date = dayColsMap.get(c);
+                        const personVal = (values[r][c] || '').trim();
+                        if (personVal) el.dataset.person = personVal;
+                    }
                     tr.appendChild(el);
                 }
                 table.appendChild(tr);
@@ -741,37 +766,6 @@
         else renderGenericTable(container, payload);
     }
 
-    /* ============================== TODAY HERO ============================== */
-    function renderTodayHero(payload) {
-        const heroEl = document.getElementById('today-hero');
-        if (payload.error || !payload.values) { heroEl.classList.add('hidden'); heroEl.innerHTML = ''; return; }
-
-        const shape = detectShape(payload);
-        let records = [];
-        if (shape === 'A') records = parseShapeA(payload, currentGroup);
-        else if (shape === 'A2') records = parseShapeA2(payload, currentGroup);
-        else if (shape === 'B') records = parseShapeB(payload, currentGroup);
-
-        const today = getTodayKST();
-        const working = [];
-        records.forEach(r => {
-            const e = r.entries.find(e => sameDay(e.date, today));
-            if (e && e.raw && e.raw.trim() && e.raw.trim() !== '/') working.push({ name: r.personName, code: e.raw.trim() });
-        });
-
-        if (!working.length) { heroEl.classList.add('hidden'); heroEl.innerHTML = ''; return; }
-
-        const dateLabel = `${today.getMonth() + 1}월 ${today.getDate()}일`;
-        const shown = working.slice(0, 8);
-        const restCount = working.length - shown.length;
-        heroEl.innerHTML = `<div class="hero-label">오늘 ${escapeHtml(dateLabel)} 근무 중 (${working.length}명)</div>
-            <div class="hero-people">
-                ${shown.map(w => `<span class="hero-chip">${escapeHtml(w.name)}<b>${escapeHtml(w.code)}</b></span>`).join('')}
-                ${restCount > 0 ? `<span class="hero-chip muted">+${restCount}명 더</span>` : ''}
-            </div>`;
-        heroEl.classList.remove('hidden');
-    }
-
     /* ============================== SEARCH ============================== */
     function escapeHtml(s) {
         return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -788,51 +782,8 @@
         return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
     }
 
-    function renderPersonCard(record, today) {
-        const card = document.createElement('div');
-        card.className = 'result-card';
-
-        const todayEntry = record.entries.find(e => sameDay(e.date, today));
-        const header = document.createElement('div');
-        header.className = 'result-header';
-        header.innerHTML = `<span class="result-name">${escapeHtml(record.personName)}</span>
-            <span class="result-meta">${escapeHtml(record.personKey)} &middot; ${escapeHtml(GROUPS[record.group].name)} &middot; ${escapeHtml(record.sheetName)}</span>`;
-        card.appendChild(header);
-
-        if (todayEntry) {
-            const callout = document.createElement('div');
-            callout.className = 'today-callout';
-            callout.innerHTML = `오늘 근무: <strong>${escapeHtml(todayEntry.raw || '(공란)')}</strong>`;
-            card.appendChild(callout);
-        }
-
-        const rowWrap = document.createElement('div');
-        rowWrap.className = 'result-row-scroll';
-        [...record.entries].sort((a, b) => a.date - b.date).forEach(entry => {
-            const chip = document.createElement('div');
-            chip.className = 'entry-chip' + (sameDay(entry.date, today) ? ' is-today' : '');
-            chip.style.backgroundColor = entry.bg;
-            chip.style.color = entry.color;
-            if (entry.bold) chip.style.fontWeight = '700';
-            chip.innerHTML = `<div class="chip-date">${entry.date.getMonth() + 1}/${entry.date.getDate()}</div><div class="chip-val">${escapeHtml(entry.raw || '·')}</div>`;
-            rowWrap.appendChild(chip);
-        });
-        card.appendChild(rowWrap);
-        return card;
-    }
-
-    function renderSearchResults(query) {
-        const resultsEl = document.getElementById('search-results');
-        resultsEl.innerHTML = '';
-        const q = query.trim();
-        if (!q) return;
-        const matches = searchIndex.filter(r => r.personKey.includes(q) || r.personName.includes(q));
-        if (!matches.length) {
-            resultsEl.innerHTML = `<p class="search-empty">"${escapeHtml(q)}"에 대한 근무 기록을 찾을 수 없습니다.</p>`;
-            return;
-        }
-        const today = getTodayKST();
-        matches.forEach(record => resultsEl.appendChild(renderPersonCard(record, today)));
+    function isoDate(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     function updateSearchStatus() {
@@ -841,10 +792,88 @@
         statusEl.textContent = ready ? '' : '검색 준비 중...';
     }
 
-    function toggleSearchView(active) {
-        document.getElementById('main-view').classList.toggle('hidden', active);
-        document.getElementById('search-view').classList.toggle('hidden', !active);
-        document.getElementById('search-clear').classList.toggle('hidden', !active);
+    function renderSearchDropdown(query) {
+        const dropdown = document.getElementById('search-dropdown');
+        const q = query.trim();
+        if (!q) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; return; }
+
+        const matches = searchIndex.filter(r => r.personKey.includes(q) || r.personName.includes(q));
+        dropdown.innerHTML = '';
+        if (!matches.length) {
+            const ready = searchIndexReady.group1 && searchIndexReady.group2;
+            dropdown.innerHTML = `<div class="search-dropdown-empty">${ready ? `"${escapeHtml(q)}"에 대한 근무 기록을 찾을 수 없습니다.` : '검색 준비 중...'}</div>`;
+            dropdown.classList.remove('hidden');
+            return;
+        }
+        matches.slice(0, 20).forEach(record => {
+            const item = document.createElement('div');
+            item.className = 'search-dropdown-item';
+            item.innerHTML = `<div class="n">${escapeHtml(record.personName)}<span class="k">${escapeHtml(record.personKey)}</span></div>
+                <div class="m">${escapeHtml(GROUPS[record.group].name)} &middot; ${escapeHtml(record.sheetName)}</div>`;
+            item.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // input blur보다 먼저 처리되도록
+                dropdown.classList.add('hidden');
+                document.getElementById('search-input').value = '';
+                document.getElementById('search-clear').classList.add('hidden');
+                jumpToRecord(record);
+            });
+            dropdown.appendChild(item);
+        });
+        dropdown.classList.remove('hidden');
+    }
+
+    function highlightPerson(container, record, shape) {
+        if (shape === 'B') {
+            const cells = Array.from(container.querySelectorAll('td[data-person]'))
+                .filter(td => td.dataset.person === record.personName);
+            cells.forEach(td => td.classList.add('search-highlight'));
+            const todayIso = isoDate(getTodayKST());
+            const todayCell = cells.find(td => td.dataset.date === todayIso);
+            (todayCell || cells[0])?.scrollIntoView({ block: 'center', inline: 'center' });
+            return;
+        }
+        const rows = Array.from(container.querySelectorAll('tr[data-person-key]')).filter(tr =>
+            tr.dataset.personKey === record.personKey || tr.dataset.personName === record.personName);
+        if (!rows.length) return;
+        rows.forEach(tr => tr.classList.add('search-highlight'));
+        const targetRow = rows[0];
+        const todayIso = isoDate(getTodayKST());
+        const todayCell = targetRow.querySelector(`[data-date="${todayIso}"]`);
+        if (todayCell) todayCell.classList.add('search-highlight-cell');
+        (todayCell || targetRow).scrollIntoView({ block: 'center', inline: 'center' });
+    }
+
+    async function jumpToRecord(record) {
+        const list = await ensureGroupIndexed(record.group);
+
+        document.querySelectorAll('.tab').forEach(b => b.dataset.active = 'false');
+        document.getElementById(`btn-${record.group}`).dataset.active = 'true';
+        document.getElementById('group1-sub').classList.add('hidden');
+        document.getElementById('group2-sub').classList.add('hidden');
+        const chipsContainer = document.getElementById(`${record.group}-sub`);
+        chipsContainer.classList.remove('hidden');
+
+        if (chipsContainer.childElementCount === 0 && list) {
+            list.forEach(({ name, gid }) => {
+                const btn = document.createElement('button');
+                btn.textContent = name;
+                btn.className = 'chip';
+                btn.dataset.active = 'false';
+                btn.onclick = () => loadSheet(record.group, gid, btn);
+                chipsContainer.appendChild(btn);
+            });
+        }
+
+        let matchBtn = null;
+        for (const btn of chipsContainer.getElementsByTagName('button')) {
+            if (btn.textContent === record.sheetName) { matchBtn = btn; break; }
+        }
+        chipsContainer.querySelectorAll('.chip').forEach(b => b.dataset.active = 'false');
+        if (matchBtn) matchBtn.dataset.active = 'true';
+
+        await loadSheet(record.group, record.gid, matchBtn);
+        const payload = sheetCache.get(`${record.group}:${record.gid}`);
+        highlightPerson(document.getElementById('sheet-container'), record, detectShape(payload));
     }
 
     /* ============================== UI WIRING ============================== */
@@ -858,7 +887,6 @@
         try {
             const payload = await fetchSingleSheet(group, gid);
             renderSheetTable(document.getElementById('sheet-container'), payload);
-            renderTodayHero(payload);
         } catch (err) {
             document.getElementById('sheet-container').innerHTML = '<p class="text-red-500 text-xs p-4">시트를 불러오지 못했습니다.</p>';
             console.error(err);
@@ -940,23 +968,28 @@
         updateSearchStatus();
 
         const searchInput = document.getElementById('search-input');
+        const searchDropdown = document.getElementById('search-dropdown');
         let debounceTimer = null;
         searchInput.addEventListener('input', () => {
+            document.getElementById('search-clear').classList.toggle('hidden', !searchInput.value.trim());
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const q = searchInput.value.trim();
-                toggleSearchView(!!q);
-                if (q) renderSearchResults(q);
-            }, 150);
+            debounceTimer = setTimeout(() => renderSearchDropdown(searchInput.value), 150);
         });
         searchInput.addEventListener('focus', () => {
             ensureGroupIndexed('group1');
             ensureGroupIndexed('group2');
-        }, { once: true });
+            if (searchInput.value.trim()) renderSearchDropdown(searchInput.value);
+        });
+        searchInput.addEventListener('blur', () => {
+            setTimeout(() => searchDropdown.classList.add('hidden'), 100);
+        });
 
         document.getElementById('search-clear').addEventListener('click', () => {
             searchInput.value = '';
-            toggleSearchView(false);
+            searchInput.focus();
+            document.getElementById('search-clear').classList.add('hidden');
+            searchDropdown.classList.add('hidden');
+            searchDropdown.innerHTML = '';
         });
 
         window.addEventListener('load', () => {
