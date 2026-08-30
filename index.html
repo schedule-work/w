@@ -573,18 +573,18 @@
         // -------------------------------------------------------------
         // -------------------------------------------------------------
         // -------------------------------------------------------------
-        // 2. React Bits - DotField 컴포넌트 (초미세 미니멀 소프트 글로우 인터랙티브)
+        // 2. React Bits - DotField 컴포넌트 (세련된 황금 밸런스 소프트 글로우 인터랙티브)
         // -------------------------------------------------------------
         const DotField = React.memo(({
-            dotRadius = 1.25,       // ⚡ 애플/Linear 감성의 초미세 도트 (반지름 1.25px)
-            dotSpacing = 16,       // ⚡ 미세하고 촘촘한 도트 매트릭스
-            cursorRadius = 350,    // ⚡ 부드러운 반응 반경
-            cursorForce = 0.1,
+            dotRadius = 2.2,        // ⚡ 시인성과 세련미를 모두 잡은 최적의 크기 (반지름 2.2px)
+            dotSpacing = 20,       // ⚡ 여유롭고 정갈한 그리드 간격
+            cursorRadius = 400,    // ⚡ 부드러운 인터랙션 반응 반경
+            cursorForce = 0.14,
             bulgeOnly = true,
-            bulgeStrength = 35,    // ⚡ 과하지 않은 절제된 반응
-            glowRadius = 180,      // ⚡ 은은한 소프트 오라 글로우
+            bulgeStrength = 65,    // ⚡ 감각적인 마우스 호버 반응
+            glowRadius = 220,      // ⚡ 세련된 오라 글로우
             sparkle = true,        // ⚡ 별빛 반짝임 효과
-            waveAmplitude = 1.2,   // ⚡ 은은하고 미세하게 찰랑이는 파도 모션
+            waveAmplitude = 3.2,   // ⚡ 우아하게 찰랑이는 실크 웨이브 모션
             gradientFrom,
             gradientTo,
             glowColor,
@@ -615,10 +615,10 @@
                 return () => mediaQuery.removeEventListener('change', handler);
             }, []);
 
-            // ⚡ 2. 절제되고 고급스러운 미니멀 소프트 톤
-            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.32)' : 'rgba(59, 130, 246, 0.22)');
-            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(167, 139, 250, 0.24)' : 'rgba(99, 102, 241, 0.15)');
-            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.15)' : 'rgba(59, 130, 246, 0.10)');
+            // ⚡ 2. 확실히 보이면서도 눈이 편안한 감각적인 톤
+            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.65)' : 'rgba(37, 99, 235, 0.55)');
+            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(167, 139, 250, 0.50)' : 'rgba(99, 102, 241, 0.40)');
+            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.30)' : 'rgba(59, 130, 246, 0.22)');
 
             propsRef.current = { 
                 dotRadius, 
@@ -1175,12 +1175,12 @@
                         const dept = rawTitle.includes(']') ? rawTitle.split(']')[0].replace('[', '') : rawTitle;
                         const evColor = arg.event.extendedProps?.colorCode || '#3b82f6';
                         
-                        // ⚡ 한 줄 포맷: [부서 / 시간]
+                        // ⚡ 세련된 소프트 파스텔 한 줄 포맷: [부서 / 시간]
                         return { 
-                            html: `<div style="background-color: ${evColor}18; border-left: 3px solid ${evColor};" class="w-full px-1.5 py-0.5 rounded text-[11px] flex items-center gap-1.5 leading-normal select-none overflow-hidden whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)]" title="${dept} (${timeStr})">
-                                <span class="font-bold shrink-0 text-slate-900 dark:text-white text-[11px]">${dept}</span>
-                                <span class="text-slate-400 dark:text-slate-500 text-[10px] shrink-0 font-normal">/</span>
-                                <span class="font-medium text-[10.5px] truncate" style="color: ${evColor};">${timeStr}</span>
+                            html: `<div style="background-color: ${evColor}12; border-left: 2.5px solid ${evColor}99;" class="w-full px-1.5 py-0.5 rounded text-[11px] flex items-center gap-1.5 leading-normal select-none overflow-hidden whitespace-nowrap" title="${dept} (${timeStr})">
+                                <span class="font-semibold shrink-0 text-slate-700 dark:text-slate-200 text-[11px]">${dept}</span>
+                                <span class="text-slate-300 dark:text-slate-600 text-[9.5px] shrink-0 font-light">/</span>
+                                <span class="font-medium text-[10.5px] truncate text-slate-500 dark:text-slate-400">${timeStr}</span>
                             </div>` 
                         };
                     },
