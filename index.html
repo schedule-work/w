@@ -141,7 +141,7 @@
         ------------------------------------------------------------- */
         .fc {
             --fc-border-color: #f1f5f9;
-            --fc-today-bg-color: rgba(37, 99, 235, 0.03);
+            --fc-today-bg-color: transparent;
             --fc-neutral-bg-color: transparent;
             background: #ffffff;
             padding: 0.85rem 1rem;
@@ -225,7 +225,7 @@
         .fc-col-header-cell.fc-day-sat,
         .fc-daygrid-day.fc-day-sat {
             width: 7.5% !important;
-            min-width: 40px;
+            min-width: 36px;
             background-color: rgba(248, 250, 252, 0.7);
         }
 
@@ -253,61 +253,97 @@
             background-color: #f8faff;
         }
 
+        /* ⚡ 날짜 상단 헤더 래퍼 (너비 100% 확장하여 가로 정렬 보장) */
         .fc-daygrid-day-top {
             padding: 3px 5px !important;
             display: flex !important;
-            align-items: center;
+            flex-direction: row !important;
+            align-items: center !important;
+            width: 100% !important;
         }
 
         .fc-daygrid-day-number {
+            width: 100% !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            text-decoration: none !important;
+        }
+
+        .fc-day-header-wrap {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            gap: 4px !important;
+        }
+
+        .fc-day-num {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 22px !important;
+            height: 22px !important;
             font-size: 0.8rem !important;
-            font-weight: 600;
-            color: #334155;
-            width: 22px;
-            height: 22px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 9999px;
+            font-weight: 600 !important;
+            border-radius: 9999px !important;
+            color: #334155 !important;
             transition: all 0.2s ease;
         }
 
-        /* ⚡ 공휴일/대체공휴일 가로 뱃지 스타일 (세로 꺾임 방지) */
-        .holiday-badge {
+        /* ⚡ 공휴일/대체공휴일 가로 뱃지 스타일 (세로 꺾임 완전 방지) */
+        .fc-holiday-tag {
             display: inline-flex !important;
             align-items: center !important;
             font-size: 0.65rem !important;
             font-weight: 700 !important;
             color: #ef4444 !important;
-            background-color: rgba(239, 68, 68, 0.1) !important;
-            border: 1px solid rgba(239, 68, 68, 0.2) !important;
-            padding: 0.5px 5px !important;
+            background-color: rgba(239, 68, 68, 0.12) !important;
+            border: 1px solid rgba(239, 68, 68, 0.25) !important;
+            padding: 1px 5px !important;
             border-radius: 4px !important;
             white-space: nowrap !important;
             line-height: 1.2 !important;
             letter-spacing: -0.02em !important;
         }
 
-        /* 오늘 날짜 원형 뱃지 하이라이트 */
-        .fc-day-today .fc-daygrid-day-number {
+        /* ⚡ 오늘 날짜(Today) 셀 한눈에 띄는 프리미엄 하이라이트 */
+        .fc-day-today {
+            background-color: rgba(37, 99, 235, 0.07) !important;
+            box-shadow: inset 0 0 0 1.5px rgba(37, 99, 235, 0.45) !important;
+        }
+
+        .fc-day-today .fc-day-num {
             background-color: #2563eb !important;
             color: #ffffff !important;
             font-weight: 800 !important;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5) !important;
+        }
+
+        /* 오늘 표시 미니 라벨 */
+        .fc-today-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            font-size: 0.62rem !important;
+            font-weight: 800 !important;
+            color: #2563eb !important;
+            background-color: rgba(37, 99, 235, 0.14) !important;
+            border: 1px solid rgba(37, 99, 235, 0.3) !important;
+            padding: 0.5px 5px !important;
+            border-radius: 4px !important;
+            white-space: nowrap !important;
+            line-height: 1.2 !important;
         }
 
         /* 주말 및 공휴일 */
-        .fc-day-sun .fc-daygrid-day-number,
-        .holiday-day .fc-daygrid-day-number {
+        .fc-day-sun .fc-day-num,
+        .holiday-day .fc-day-num {
             color: #ef4444 !important;
         }
 
-        .fc-day-sat .fc-daygrid-day-number {
+        .fc-day-sat .fc-day-num {
             color: #3b82f6 !important;
-        }
-
-        .holiday-day a {
-            color: #ef4444 !important;
         }
 
         .fc-highlight {
@@ -370,7 +406,6 @@
                 background: #1e293b;
                 border-color: #334155;
                 --fc-border-color: #334155;
-                --fc-today-bg-color: rgba(37, 99, 235, 0.08);
                 --fc-page-bg-color: #1e293b;
                 --fc-neutral-text-color: #cbd5e1;
                 --fc-list-event-hover-bg-color: #334155;
@@ -426,28 +461,38 @@
                 background-color: #243247;
             }
 
-            .fc-col-header-cell-cushion,
-            .fc-daygrid-day-number {
+            .fc-day-num {
                 color: #cbd5e1 !important;
             }
 
-            .fc-day-today .fc-daygrid-day-number {
+            .fc-day-today {
+                background-color: rgba(59, 130, 246, 0.15) !important;
+                box-shadow: inset 0 0 0 1.5px rgba(59, 130, 246, 0.6) !important;
+            }
+
+            .fc-day-today .fc-day-num {
                 background-color: #3b82f6 !important;
                 color: #ffffff !important;
             }
 
-            .holiday-badge {
+            .fc-today-badge {
+                color: #60a5fa !important;
+                background-color: rgba(59, 130, 246, 0.22) !important;
+                border-color: rgba(59, 130, 246, 0.4) !important;
+            }
+
+            .fc-holiday-tag {
                 color: #f87171 !important;
                 background-color: rgba(239, 68, 68, 0.2) !important;
                 border-color: rgba(239, 68, 68, 0.3) !important;
             }
 
-            .fc-day-sun .fc-daygrid-day-number,
-            .holiday-day .fc-daygrid-day-number {
+            .fc-day-sun .fc-day-num,
+            .holiday-day .fc-day-num {
                 color: #f87171 !important;
             }
 
-            .fc-day-sat .fc-daygrid-day-number {
+            .fc-day-sat .fc-day-num {
                 color: #60a5fa !important;
             }
         }
@@ -503,18 +548,18 @@
         // -------------------------------------------------------------
         // -------------------------------------------------------------
         // -------------------------------------------------------------
-        // 2. React Bits - DotField 컴포넌트 (초고화질 선명도 & 비비드 네온 인터랙티브)
+        // 2. React Bits - DotField 컴포넌트 (은은하고 세련된 소프트 글로우 인터랙티브)
         // -------------------------------------------------------------
         const DotField = React.memo(({
-            dotRadius = 3.5,        // ⚡ 점 크기를 3.5px로 대폭 확대 (지름 7px의 선명한 도트)
-            dotSpacing = 24,       // ⚡ 시원시원한 그리드 간격
-            cursorRadius = 450,    // ⚡ 넓은 마우스 반응 반경
-            cursorForce = 0.2,
+            dotRadius = 1.9,        // ⚡ 은은하고 세련된 크기 (반지름 1.9px)
+            dotSpacing = 18,       // ⚡ 조화로운 간격
+            cursorRadius = 380,    // ⚡ 부드러운 반응 반경
+            cursorForce = 0.12,
             bulgeOnly = true,
-            bulgeStrength = 100,   // ⚡ 마우스 호버 시 극적인 돋보기 팽창 효과
-            glowRadius = 260,      // ⚡ 풍성한 오라 글로우
+            bulgeStrength = 60,    // ⚡ 은은한 돋보기 효과
+            glowRadius = 200,      // ⚡ 부드러운 소프트 오라 글로우
             sparkle = true,        // ⚡ 별빛 반짝임 효과
-            waveAmplitude = 6.0,   // ⚡ 마우스 없이도 눈에 확 들어오는 시원한 파도타기 웨이브
+            waveAmplitude = 2.5,   // ⚡ 잔잔한 미풍 같은 은은한 파도 모션
             gradientFrom,
             gradientTo,
             glowColor,
@@ -545,10 +590,10 @@
                 return () => mediaQuery.removeEventListener('change', handler);
             }, []);
 
-            // ⚡ 2. 확실하게 눈에 띄는 비비드 & 네온 컬러 튜닝 (알파값 0.85~0.95)
-            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(56, 189, 248, 0.95)' : 'rgba(29, 78, 216, 0.85)');
-            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(168, 85, 247, 0.90)' : 'rgba(124, 58, 237, 0.80)');
-            const activeGlow = glowColor || (isDarkMode ? 'rgba(56, 189, 248, 0.45)' : 'rgba(59, 130, 246, 0.35)');
+            // ⚡ 2. 은은하고 감각적인 소프트 테마 컬러
+            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.50)' : 'rgba(59, 130, 246, 0.40)');
+            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(167, 139, 250, 0.40)' : 'rgba(99, 102, 241, 0.30)');
+            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.25)' : 'rgba(59, 130, 246, 0.18)');
 
             propsRef.current = { 
                 dotRadius, 
@@ -1049,17 +1094,27 @@
                     dayCellContent: function (arg) {
                         const dayNumber = arg.dayNumberText.replace('일', '');
                         const holidayName = getHolidayName(arg.date);
+                        const isToday = arg.isToday;
+
+                        let leftTag = null;
                         if (holidayName && arg.view.type === 'dayGridMonth') {
+                            leftTag = `<span class="fc-holiday-tag" title="${holidayName}">${holidayName}</span>`;
+                        } else if (isToday && arg.view.type === 'dayGridMonth') {
+                            leftTag = `<span class="fc-today-badge">오늘</span>`;
+                        }
+
+                        if (leftTag) {
                             return { 
-                                html: `<div class="flex items-center justify-between w-full px-1 gap-1">
-                                    <span class="holiday-badge" title="${holidayName}">${holidayName}</span>
-                                    <span class="font-bold text-[0.8rem]">${dayNumber}</span>
+                                html: `<div class="fc-day-header-wrap">
+                                    ${leftTag}
+                                    <span class="fc-day-num">${dayNumber}</span>
                                 </div>` 
                             };
                         }
+
                         return { 
-                            html: `<div class="flex items-center justify-end w-full px-1">
-                                <span class="text-[0.8rem] font-semibold">${dayNumber}</span>
+                            html: `<div class="fc-day-header-wrap justify-end">
+                                <span class="fc-day-num">${dayNumber}</span>
                             </div>` 
                         };
                     },
