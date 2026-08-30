@@ -266,22 +266,30 @@
             background-color: #f8faff;
         }
 
-        /* ⚡ 날짜 상단 헤더 래퍼 (너비 100% 확장하여 가로 정렬 보장) */
-        .fc-daygrid-day-top {
+        /* ⚡ 날짜 상단 헤더 래퍼 (너비 100% 확장하여 가로 정렬 절대 보장) */
+        .fc .fc-daygrid-day-top {
             padding: 3px 5px !important;
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
+            justify-content: space-between !important;
             width: 100% !important;
+            box-sizing: border-box !important;
+            float: none !important;
         }
 
-        .fc-daygrid-day-number {
+        .fc .fc-daygrid-day-top a.fc-daygrid-day-number,
+        .fc .fc-daygrid-day-number {
             width: 100% !important;
+            max-width: 100% !important;
             padding: 0 !important;
+            margin: 0 !important;
             display: flex !important;
             align-items: center !important;
-            justify-content: flex-end !important;
+            justify-content: space-between !important;
             text-decoration: none !important;
+            float: none !important;
+            box-sizing: border-box !important;
         }
 
         .fc-day-header-wrap {
@@ -290,22 +298,23 @@
             justify-content: space-between !important;
             width: 100% !important;
             gap: 4px !important;
+            white-space: nowrap !important;
         }
 
         .fc-day-num {
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            width: 22px !important;
-            height: 22px !important;
-            font-size: 0.8rem !important;
+            min-width: 20px !important;
+            height: 20px !important;
+            font-size: 0.78rem !important;
             font-weight: 600 !important;
             border-radius: 9999px !important;
             color: #334155;
             transition: all 0.2s ease;
         }
 
-        /* ⚡ 공휴일/대체공휴일 세련된 폰트 텍스트 스타일 (투박한 박스 제거) */
+        /* ⚡ 공휴일/대체공휴일 세련된 폰트 텍스트 스타일 */
         .fc-holiday-name {
             font-size: 0.68rem !important;
             font-weight: 600 !important;
@@ -313,6 +322,7 @@
             white-space: nowrap !important;
             letter-spacing: -0.025em !important;
             line-height: 1 !important;
+            display: inline-block !important;
         }
 
         /* ⚡ 오늘 날짜(Today) 셀 한눈에 띄는 프리미엄 하이라이트 */
@@ -563,18 +573,18 @@
         // -------------------------------------------------------------
         // -------------------------------------------------------------
         // -------------------------------------------------------------
-        // 2. React Bits - DotField 컴포넌트 (은은하고 세련된 소프트 글로우 인터랙티브)
+        // 2. React Bits - DotField 컴포넌트 (초미세 미니멀 소프트 글로우 인터랙티브)
         // -------------------------------------------------------------
         const DotField = React.memo(({
-            dotRadius = 1.9,        // ⚡ 은은하고 세련된 크기 (반지름 1.9px)
-            dotSpacing = 18,       // ⚡ 조화로운 간격
-            cursorRadius = 380,    // ⚡ 부드러운 반응 반경
-            cursorForce = 0.12,
+            dotRadius = 1.25,       // ⚡ 애플/Linear 감성의 초미세 도트 (반지름 1.25px)
+            dotSpacing = 16,       // ⚡ 미세하고 촘촘한 도트 매트릭스
+            cursorRadius = 350,    // ⚡ 부드러운 반응 반경
+            cursorForce = 0.1,
             bulgeOnly = true,
-            bulgeStrength = 60,    // ⚡ 은은한 돋보기 효과
-            glowRadius = 200,      // ⚡ 부드러운 소프트 오라 글로우
+            bulgeStrength = 35,    // ⚡ 과하지 않은 절제된 반응
+            glowRadius = 180,      // ⚡ 은은한 소프트 오라 글로우
             sparkle = true,        // ⚡ 별빛 반짝임 효과
-            waveAmplitude = 2.5,   // ⚡ 잔잔한 미풍 같은 은은한 파도 모션
+            waveAmplitude = 1.2,   // ⚡ 은은하고 미세하게 찰랑이는 파도 모션
             gradientFrom,
             gradientTo,
             glowColor,
@@ -605,10 +615,10 @@
                 return () => mediaQuery.removeEventListener('change', handler);
             }, []);
 
-            // ⚡ 2. 은은하고 감각적인 소프트 테마 컬러
-            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.50)' : 'rgba(59, 130, 246, 0.40)');
-            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(167, 139, 250, 0.40)' : 'rgba(99, 102, 241, 0.30)');
-            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.25)' : 'rgba(59, 130, 246, 0.18)');
+            // ⚡ 2. 절제되고 고급스러운 미니멀 소프트 톤
+            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.32)' : 'rgba(59, 130, 246, 0.22)');
+            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(167, 139, 250, 0.24)' : 'rgba(99, 102, 241, 0.15)');
+            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.15)' : 'rgba(59, 130, 246, 0.10)');
 
             propsRef.current = { 
                 dotRadius, 
@@ -1113,14 +1123,14 @@
 
                         let leftTag = null;
                         if (holidayName && arg.view.type === 'dayGridMonth') {
-                            leftTag = `<span class="fc-holiday-name" title="${holidayName}">${holidayName}</span>`;
+                            leftTag = `<span class="fc-holiday-name" style="font-size: 11px; font-weight: 600; color: #ef4444; white-space: nowrap; line-height: 1; letter-spacing: -0.02em;" title="${holidayName}">${holidayName}</span>`;
                         } else if (isToday && arg.view.type === 'dayGridMonth') {
-                            leftTag = `<span class="fc-today-badge">오늘</span>`;
+                            leftTag = `<span class="fc-today-badge" style="font-size: 10px; font-weight: 800; color: #2563eb; background-color: rgba(37,99,235,0.12); padding: 1px 4px; border-radius: 3px; white-space: nowrap; line-height: 1.1;">오늘</span>`;
                         }
 
                         if (leftTag) {
                             return { 
-                                html: `<div class="fc-day-header-wrap">
+                                html: `<div style="display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; min-width: 0 !important; gap: 4px !important; white-space: nowrap !important;">
                                     ${leftTag}
                                     <span class="fc-day-num">${dayNumber}</span>
                                 </div>` 
@@ -1128,7 +1138,7 @@
                         }
 
                         return { 
-                            html: `<div class="fc-day-header-wrap justify-end">
+                            html: `<div style="display: flex !important; justify-content: flex-end !important; align-items: center !important; width: 100% !important;">
                                 <span class="fc-day-num">${dayNumber}</span>
                             </div>` 
                         };
