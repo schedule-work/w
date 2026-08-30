@@ -1087,6 +1087,45 @@
 
             const handleAdminAuth = async () => { const pin = window.prompt('관리자 PIN을 입력해주세요.'); if (pin === null) return; const cleanPin = String(pin).trim().toLowerCase(); if (!cleanPin) return alert('관리자 PIN을 입력해주세요.'); setLoading(true); try { const data = await callApi({ action: 'ADMIN_AUTH', token: user.token, pin: cleanPin }); const upgradedUser = { ...user, ...data.user, token: user.token }; setUser(upgradedUser); sessionStorage.setItem('cardPortalUser', JSON.stringify(upgradedUser)); showToast('관리자 인증이 완료되었습니다.'); await fetchBookings(true); } catch (e) { alert(e.message); } finally { setLoading(false); } };
 
+            const renderDayCellContent = (arg) => {
+                const dayNumber = arg.dayNumberText.replace('일', '');
+                const holidayName = getHolidayName(arg.date);
+                const isToday = arg.isToday;
+                const dayOfWeek = arg.date.getDay(); // 0: 일요일, 6: 토요일
+
+                // ⚡ 일요일(빨강), 토요일(파랑), 공휴일(빨강), 오늘(흰색/블루배경), 평일(기본)
+                let numColor = '';
+                if (!isToday) {
+                    if (dayOfWeek === 0 || holidayName) {
+                        numColor = 'color: #ef4444 !important; font-weight: 700;';
+                    } else if (dayOfWeek === 6) {
+                        numColor = 'color: #2563eb !important; font-weight: 700;';
+                    }
+                }
+
+                let leftTag = null;
+                if (holidayName && arg.view.type === 'dayGridMonth') {
+                    leftTag = `<span class="fc-holiday-name" style="font-size: 11px; font-weight: 600; color: #ef4444; white-space: nowrap; line-height: 1; letter-spacing: -0.02em;" title="${holidayName}">${holidayName}</span>`;
+                } else if (isToday && arg.view.type === 'dayGridMonth') {
+                    leftTag = `<span class="fc-today-badge" style="font-size: 10px; font-weight: 800; color: #2563eb; background-color: rgba(37,99,235,0.12); padding: 1px 4px; border-radius: 3px; white-space: nowrap; line-height: 1.1;">오늘</span>`;
+                }
+
+                if (leftTag) {
+                    return { 
+                        html: `<div style="display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; min-width: 0 !important; gap: 4px !important; white-space: nowrap !important;">
+                            ${leftTag}
+                            <span class="fc-day-num" style="${numColor}">${dayNumber}</span>
+                        </div>` 
+                    };
+                }
+
+                return { 
+                    html: `<div style="display: flex !important; justify-content: flex-end !important; align-items: center !important; width: 100% !important;">
+                        <span class="fc-day-num" style="${numColor}">${dayNumber}</span>
+                    </div>` 
+                };
+            };
+
             React.useEffect(() => {
                 if (!user) return;
                 if (!calendarContainerRef.current) return;
@@ -1116,33 +1155,7 @@
                         return [];
                     },
 
-                    dayCellContent: function (arg) {
-                        const dayNumber = arg.dayNumberText.replace('일', '');
-                        const holidayName = getHolidayName(arg.date);
-                        const isToday = arg.isToday;
-
-                        let leftTag = null;
-                        if (holidayName && arg.view.type === 'dayGridMonth') {
-                            leftTag = `<span class="fc-holiday-name" style="font-size: 11px; font-weight: 600; color: #ef4444; white-space: nowrap; line-height: 1; letter-spacing: -0.02em;" title="${holidayName}">${holidayName}</span>`;
-                        } else if (isToday && arg.view.type === 'dayGridMonth') {
-                            leftTag = `<span class="fc-today-badge" style="font-size: 10px; font-weight: 800; color: #2563eb; background-color: rgba(37,99,235,0.12); padding: 1px 4px; border-radius: 3px; white-space: nowrap; line-height: 1.1;">오늘</span>`;
-                        }
-
-                        if (leftTag) {
-                            return { 
-                                html: `<div style="display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; min-width: 0 !important; gap: 4px !important; white-space: nowrap !important;">
-                                    ${leftTag}
-                                    <span class="fc-day-num">${dayNumber}</span>
-                                </div>` 
-                            };
-                        }
-
-                        return { 
-                            html: `<div style="display: flex !important; justify-content: flex-end !important; align-items: center !important; width: 100% !important;">
-                                <span class="fc-day-num">${dayNumber}</span>
-                            </div>` 
-                        };
-                    },
+                    dayCellContent: renderDayCellContent,
 
                     eventContent: function (arg) {
                         const start = new Date(arg.event.start);
@@ -1302,32 +1315,13 @@
             React.useEffect(() => {
                 if (calendarInstanceRef.current) {
                     calendarInstanceRef.current.setOption('dayCellClassNames', function (arg) {
-                        const yyyy = arg.date.getFullYear();
-                        const mm = String(arg.date.getMonth() + 1).padStart(2, '0');
-                        const dd = String(arg.date.getDate()).padStart(2, '0');
-                        const dateStr = `${yyyy}-${mm}-${dd}`;
-
-                        if (customHolidays[dateStr] || getHolidayName(arg.date)) {
+                        if (getHolidayName(arg.date)) {
                             return ['holiday-day'];
                         }
                         return [];
                     });
                     
-                    calendarInstanceRef.current.setOption('dayCellContent', function (arg) {
-                        const dayNumber = arg.dayNumberText.replace('일', '');
-                        const yyyy = arg.date.getFullYear();
-                        const mm = String(arg.date.getMonth() + 1).padStart(2, '0');
-                        const dd = String(arg.date.getDate()).padStart(2, '0');
-                        const dateStr = `${yyyy}-${mm}-${dd}`;
-
-                        const holidayName = customHolidays[dateStr] || getHolidayName(arg.date);
-
-                        if (holidayName && arg.view.type === 'dayGridMonth') {
-                            return { html: `<div class="flex flex-col items-center"><span>${dayNumber}</span><span class="holiday-text">${holidayName}</span></div>` };
-                        }
-                        return { html: `<span>${dayNumber}</span>` };
-                    });
-                    
+                    calendarInstanceRef.current.setOption('dayCellContent', renderDayCellContent);
                     calendarInstanceRef.current.render();
                 }
             }, [customHolidays]);
