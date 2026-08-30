@@ -144,15 +144,30 @@
             --fc-today-bg-color: rgba(37, 99, 235, 0.03);
             --fc-neutral-bg-color: transparent;
             background: #ffffff;
-            padding: 1.25rem;
+            padding: 0.85rem 1rem;
             border-radius: 1.25rem;
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+            height: 100%;
+        }
+
+        /* ⚡ 캘린더 내부 스크롤바 투명화 (투박한 스크롤바 제거) */
+        .fc-scroller,
+        .fc-scroller-liquid-absolute {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
+        .fc-scroller::-webkit-scrollbar,
+        .fc-scroller-liquid-absolute::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
 
         /* 툴바 & 타이틀 */
         .fc .fc-toolbar {
-            margin-bottom: 1.25rem !important;
+            margin-bottom: 0.85rem !important;
             gap: 0.75rem;
         }
 
@@ -196,12 +211,27 @@
 
         /* 요일 헤더 */
         .fc th {
-            padding: 0.6rem 0 !important;
+            padding: 0.5rem 0 !important;
             font-size: 0.75rem !important;
             font-weight: 700 !important;
             color: #64748b !important;
             border: none !important;
             border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        /* ⚡ 요일별 비대칭 너비: 평일(월~금) 와이드 17%, 주말(토/일) 슬림 7.5% */
+        .fc-col-header-cell.fc-day-sun,
+        .fc-daygrid-day.fc-day-sun,
+        .fc-col-header-cell.fc-day-sat,
+        .fc-daygrid-day.fc-day-sat {
+            width: 7.5% !important;
+            min-width: 40px;
+            background-color: rgba(248, 250, 252, 0.7);
+        }
+
+        .fc-col-header-cell:not(.fc-day-sun):not(.fc-day-sat),
+        .fc-daygrid-day:not(.fc-day-sun):not(.fc-day-sat) {
+            width: 17% !important;
         }
 
         /* 날짜 셀 */
@@ -224,21 +254,38 @@
         }
 
         .fc-daygrid-day-top {
-            padding: 4px 6px !important;
+            padding: 3px 5px !important;
+            display: flex !important;
+            align-items: center;
         }
 
         .fc-daygrid-day-number {
             font-size: 0.8rem !important;
             font-weight: 600;
             color: #334155;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             border-radius: 9999px;
-            margin: 2px;
             transition: all 0.2s ease;
+        }
+
+        /* ⚡ 공휴일/대체공휴일 가로 뱃지 스타일 (세로 꺾임 방지) */
+        .holiday-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            font-size: 0.65rem !important;
+            font-weight: 700 !important;
+            color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            border: 1px solid rgba(239, 68, 68, 0.2) !important;
+            padding: 0.5px 5px !important;
+            border-radius: 4px !important;
+            white-space: nowrap !important;
+            line-height: 1.2 !important;
+            letter-spacing: -0.02em !important;
         }
 
         /* 오늘 날짜 원형 뱃지 하이라이트 */
@@ -259,13 +306,6 @@
             color: #3b82f6 !important;
         }
 
-        .holiday-text {
-            color: #ef4444;
-            font-size: 0.68rem;
-            font-weight: 600;
-            margin-top: 1px;
-        }
-
         .holiday-day a {
             color: #ef4444 !important;
         }
@@ -278,8 +318,8 @@
 
         /* 모던 이벤트 카드 애니메이션 */
         .fc-event {
-            margin: 2px 3px !important;
-            border-radius: 6px !important;
+            margin: 1.5px 2px !important;
+            border-radius: 5px !important;
             border: none !important;
             transition: transform 0.15s ease, box-shadow 0.15s ease !important;
         }
@@ -293,7 +333,7 @@
         /* 모바일 최적화 */
         @media (max-width: 640px) {
             .fc {
-                padding: 0.6rem;
+                padding: 0.5rem;
                 border-radius: 0.85rem;
             }
 
@@ -309,6 +349,14 @@
             .fc-header-toolbar {
                 flex-wrap: wrap;
                 gap: 6px;
+            }
+
+            .fc-col-header-cell.fc-day-sun,
+            .fc-daygrid-day.fc-day-sun,
+            .fc-col-header-cell.fc-day-sat,
+            .fc-daygrid-day.fc-day-sat {
+                width: 8% !important;
+                min-width: 28px;
             }
         }
 
@@ -328,6 +376,13 @@
                 --fc-list-event-hover-bg-color: #334155;
                 box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
                 color: #f8fafc;
+            }
+
+            .fc-col-header-cell.fc-day-sun,
+            .fc-daygrid-day.fc-day-sun,
+            .fc-col-header-cell.fc-day-sat,
+            .fc-daygrid-day.fc-day-sat {
+                background-color: rgba(15, 23, 42, 0.45);
             }
 
             .fc .fc-toolbar-title {
@@ -381,6 +436,12 @@
                 color: #ffffff !important;
             }
 
+            .holiday-badge {
+                color: #f87171 !important;
+                background-color: rgba(239, 68, 68, 0.2) !important;
+                border-color: rgba(239, 68, 68, 0.3) !important;
+            }
+
             .fc-day-sun .fc-daygrid-day-number,
             .holiday-day .fc-daygrid-day-number {
                 color: #f87171 !important;
@@ -388,10 +449,6 @@
 
             .fc-day-sat .fc-daygrid-day-number {
                 color: #60a5fa !important;
-            }
-
-            .holiday-text {
-                color: #f87171;
             }
         }
     </style>
@@ -445,18 +502,19 @@
         // 2. React Bits - DotField 컴포넌트 (로그인 인터랙티브 배경)
         // -------------------------------------------------------------
         // -------------------------------------------------------------
-        // 2. React Bits - DotField 컴포넌트 (다크/라이트 자동감지 & 가시성 대폭 강화)
+        // -------------------------------------------------------------
+        // 2. React Bits - DotField 컴포넌트 (초고화질 선명도 & 비비드 네온 인터랙티브)
         // -------------------------------------------------------------
         const DotField = React.memo(({
-            dotRadius = 2.4,        // ⚡ 점 크기를 2.4로 키워 확실한 가시성 확보
-            dotSpacing = 18,       // ⚡ 시원한 간격
+            dotRadius = 3.5,        // ⚡ 점 크기를 3.5px로 대폭 확대 (지름 7px의 선명한 도트)
+            dotSpacing = 24,       // ⚡ 시원시원한 그리드 간격
             cursorRadius = 450,    // ⚡ 넓은 마우스 반응 반경
-            cursorForce = 0.15,
+            cursorForce = 0.2,
             bulgeOnly = true,
-            bulgeStrength = 85,    // ⚡ 마우스 호버 시 돋보기 효과 대폭 강화
-            glowRadius = 220,      // ⚡ 부드러운 오라 글로우
+            bulgeStrength = 100,   // ⚡ 마우스 호버 시 극적인 돋보기 팽창 효과
+            glowRadius = 260,      // ⚡ 풍성한 오라 글로우
             sparkle = true,        // ⚡ 별빛 반짝임 효과
-            waveAmplitude = 3.5,   // ⚡ 가만히 있어도 살아 숨쉬듯 은은하게 움직이는 파도 애니메이션
+            waveAmplitude = 6.0,   // ⚡ 마우스 없이도 눈에 확 들어오는 시원한 파도타기 웨이브
             gradientFrom,
             gradientTo,
             glowColor,
@@ -487,10 +545,10 @@
                 return () => mediaQuery.removeEventListener('change', handler);
             }, []);
 
-            // ⚡ 2. 테마별 뚜렷하고 세련된 색상 매핑
-            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.70)' : 'rgba(37, 99, 235, 0.55)');
-            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(167, 139, 250, 0.55)' : 'rgba(99, 102, 241, 0.40)');
-            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.35)' : 'rgba(37, 99, 235, 0.22)');
+            // ⚡ 2. 확실하게 눈에 띄는 비비드 & 네온 컬러 튜닝 (알파값 0.85~0.95)
+            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(56, 189, 248, 0.95)' : 'rgba(29, 78, 216, 0.85)');
+            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(168, 85, 247, 0.90)' : 'rgba(124, 58, 237, 0.80)');
+            const activeGlow = glowColor || (isDarkMode ? 'rgba(56, 189, 248, 0.45)' : 'rgba(59, 130, 246, 0.35)');
 
             propsRef.current = { 
                 dotRadius, 
@@ -541,7 +599,7 @@
 
                 function buildDots(w, h) {
                     const p = propsRef.current;
-                    const step = p.dotRadius + p.dotSpacing;
+                    const step = p.dotRadius * 2 + p.dotSpacing;
                     const cols = Math.floor(w / step);
                     const rows = Math.floor(h / step);
                     const padX = (w % step) / 2;
@@ -586,10 +644,10 @@
                     const { w, h } = sizeRef.current;
                     const p = propsRef.current;
                     const len = dots.length;
-                    const t = frameCount * 0.02;
+                    const t = frameCount * 0.025;
 
-                    const targetEngagement = Math.min(m.speed / 5, 1);
-                    engagement.current += (targetEngagement - engagement.current) * 0.06;
+                    const targetEngagement = Math.min(m.speed / 4, 1);
+                    engagement.current += (targetEngagement - engagement.current) * 0.08;
                     if (engagement.current < 0.001) engagement.current = 0;
                     const eng = engagement.current;
 
@@ -610,7 +668,7 @@
 
                     const cr = p.cursorRadius;
                     const crSq = cr * cr;
-                    const rad = p.dotRadius / 2;
+                    const baseRad = p.dotRadius;
                     const isBulge = p.bulgeOnly;
 
                     ctx.beginPath();
@@ -621,14 +679,17 @@
                         const dy = m.y - d.ay;
                         const distSq = dx * dx + dy * dy;
 
-                        if (distSq < crSq && eng > 0.01) {
+                        let currentRad = baseRad;
+
+                        if (distSq < crSq) {
                             const dist = Math.sqrt(distSq);
+                            const tRatio = 1 - dist / cr;
                             if (isBulge) {
-                                const t = 1 - dist / cr;
-                                const push = t * t * p.bulgeStrength * eng;
+                                const push = tRatio * tRatio * p.bulgeStrength;
                                 const angle = Math.atan2(dy, dx);
-                                d.sx += (d.ax - Math.cos(angle) * push - d.sx) * 0.15;
-                                d.sy += (d.ay - Math.sin(angle) * push - d.sy) * 0.15;
+                                d.sx += (d.ax - Math.cos(angle) * push - d.sx) * 0.18;
+                                d.sy += (d.ay - Math.sin(angle) * push - d.sy) * 0.18;
+                                currentRad += tRatio * 2.2; // 마우스 근처에서 도트가 실제로 커짐
                             } else {
                                 const angle = Math.atan2(dy, dx);
                                 const move = (500 / dist) * (m.speed * p.cursorForce);
@@ -652,22 +713,22 @@
                         let drawX = d.sx;
                         let drawY = d.sy;
                         if (p.waveAmplitude > 0) {
-                            drawY += Math.sin(d.ax * 0.03 + t) * p.waveAmplitude;
-                            drawX += Math.cos(d.ay * 0.03 + t * 0.7) * (p.waveAmplitude * 0.6);
+                            drawY += Math.sin(d.ax * 0.02 + t) * p.waveAmplitude;
+                            drawX += Math.cos(d.ay * 0.02 + t * 0.8) * (p.waveAmplitude * 0.6);
                         }
 
                         if (p.sparkle) {
                             const hash = ((i * 2654435761) ^ (frameCount >> 3)) >>> 0;
-                            if ((hash % 100) < 3) {
-                                ctx.moveTo(drawX + rad * 1.8, drawY);
-                                ctx.arc(drawX, drawY, rad * 1.8, 0, Math.PI * 2);
+                            if ((hash % 100) < 4) {
+                                ctx.moveTo(drawX + currentRad * 1.5, drawY);
+                                ctx.arc(drawX, drawY, currentRad * 1.5, 0, Math.PI * 2);
                             } else {
-                                ctx.moveTo(drawX + rad, drawY);
-                                ctx.arc(drawX, drawY, rad, 0, Math.PI * 2);
+                                ctx.moveTo(drawX + currentRad, drawY);
+                                ctx.arc(drawX, drawY, currentRad, 0, Math.PI * 2);
                             }
                         } else {
-                            ctx.moveTo(drawX + rad, drawY);
-                            ctx.arc(drawX, drawY, rad, 0, Math.PI * 2);
+                            ctx.moveTo(drawX + currentRad, drawY);
+                            ctx.arc(drawX, drawY, currentRad, 0, Math.PI * 2);
                         }
                     }
 
@@ -963,6 +1024,8 @@
 
                 const calendar = new FullCalendar.Calendar(calendarContainerRef.current, {
                     height: '100%',
+                    expandRows: true,
+                    handleWindowResize: true,
                     locale: 'ko',
                     selectable: true,
                     selectLongPressDelay: 0,
@@ -987,9 +1050,18 @@
                         const dayNumber = arg.dayNumberText.replace('일', '');
                         const holidayName = getHolidayName(arg.date);
                         if (holidayName && arg.view.type === 'dayGridMonth') {
-                            return { html: `<div class="flex flex-col items-center"><span>${dayNumber}</span><span class="holiday-text">${holidayName}</span></div>` };
+                            return { 
+                                html: `<div class="flex items-center justify-between w-full px-1 gap-1">
+                                    <span class="holiday-badge" title="${holidayName}">${holidayName}</span>
+                                    <span class="font-bold text-[0.8rem]">${dayNumber}</span>
+                                </div>` 
+                            };
                         }
-                        return { html: `<span>${dayNumber}</span>` };
+                        return { 
+                            html: `<div class="flex items-center justify-end w-full px-1">
+                                <span class="text-[0.8rem] font-semibold">${dayNumber}</span>
+                            </div>` 
+                        };
                     },
 
                     eventContent: function (arg) {
@@ -1363,22 +1435,22 @@
             // ---------------------------------------------------------
             if (!user) {
                 return (
-                    <div className="relative h-dvh w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 transition-colors duration-200 overflow-hidden">
+                    <div className="relative h-dvh w-full flex items-center justify-center bg-gradient-to-br from-blue-50/60 via-slate-50 to-indigo-50/40 dark:from-[#070d18] dark:via-[#0b1120] dark:to-[#111827] px-4 transition-colors duration-200 overflow-hidden">
                         
-                        {/* 2. 인터랙티브 캔버스 배경 */}
+                        {/* 2. 인터랙티브 캔버스 배경 (초고선명 비비드 도트) */}
                         <DotField />
 
-                        {/* 메인 로그인 카드 */}
-                        <div className="relative z-10 max-w-md w-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-2xl p-7 sm:p-8 border border-slate-200/80 dark:border-slate-700/80 transition-all">
+                        {/* 메인 로그인 카드 (프리미엄 글래스모피즘) */}
+                        <div className="relative z-10 max-w-md w-full bg-white/85 dark:bg-slate-800/85 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(30,58,138,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-7 sm:p-9 border border-white/70 dark:border-slate-700/70 transition-all">
                             
                             <div className="text-center mb-6 select-none">
                                 <h2 
-                                    className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
+                                    className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
                                     onClick={() => window.location.reload()}
                                 >
                                     간호부 법인카드 예약 시스템
                                 </h2>
-                                <p className="text-sm text-slate-400 dark:text-slate-400 mt-2">이름과 사번을 정확히 입력해 주세요.</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">이름과 사번을 입력하여 로그인해 주세요.</p>
                             </div>
             
                             {/* --- [상태창] 실시간 로딩 타이핑 인디케이터 적용 --- */}
