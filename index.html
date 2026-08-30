@@ -209,7 +209,7 @@
             opacity: 0.4;
         }
 
-        /* 요일 헤더 */
+        /* 요일 헤더 기본 스타일 */
         .fc th {
             padding: 0.5rem 0 !important;
             font-size: 0.75rem !important;
@@ -217,6 +217,19 @@
             color: #64748b !important;
             border: none !important;
             border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        /* ⚡ 토요일(파랑) / 일요일(빨강) 요일 헤더 색상 명확화 */
+        .fc th.fc-day-sun,
+        .fc th.fc-day-sun a,
+        .fc-col-header-cell.fc-day-sun {
+            color: #ef4444 !important;
+        }
+
+        .fc th.fc-day-sat,
+        .fc th.fc-day-sat a,
+        .fc-col-header-cell.fc-day-sat {
+            color: #2563eb !important;
         }
 
         /* ⚡ 요일별 비대칭 너비: 평일(월~금) 와이드 17%, 주말(토/일) 슬림 7.5% */
@@ -288,24 +301,18 @@
             font-size: 0.8rem !important;
             font-weight: 600 !important;
             border-radius: 9999px !important;
-            color: #334155 !important;
+            color: #334155;
             transition: all 0.2s ease;
         }
 
-        /* ⚡ 공휴일/대체공휴일 가로 뱃지 스타일 (세로 꺾임 완전 방지) */
-        .fc-holiday-tag {
-            display: inline-flex !important;
-            align-items: center !important;
-            font-size: 0.65rem !important;
-            font-weight: 700 !important;
+        /* ⚡ 공휴일/대체공휴일 세련된 폰트 텍스트 스타일 (투박한 박스 제거) */
+        .fc-holiday-name {
+            font-size: 0.68rem !important;
+            font-weight: 600 !important;
             color: #ef4444 !important;
-            background-color: rgba(239, 68, 68, 0.12) !important;
-            border: 1px solid rgba(239, 68, 68, 0.25) !important;
-            padding: 1px 5px !important;
-            border-radius: 4px !important;
             white-space: nowrap !important;
-            line-height: 1.2 !important;
-            letter-spacing: -0.02em !important;
+            letter-spacing: -0.025em !important;
+            line-height: 1 !important;
         }
 
         /* ⚡ 오늘 날짜(Today) 셀 한눈에 띄는 프리미엄 하이라이트 */
@@ -328,22 +335,21 @@
             font-size: 0.62rem !important;
             font-weight: 800 !important;
             color: #2563eb !important;
-            background-color: rgba(37, 99, 235, 0.14) !important;
-            border: 1px solid rgba(37, 99, 235, 0.3) !important;
-            padding: 0.5px 5px !important;
-            border-radius: 4px !important;
+            background-color: rgba(37, 99, 235, 0.12) !important;
+            padding: 1px 4px !important;
+            border-radius: 3px !important;
             white-space: nowrap !important;
-            line-height: 1.2 !important;
+            line-height: 1.1 !important;
         }
 
-        /* 주말 및 공휴일 */
+        /* ⚡ 일요일(빨강) / 토요일(파랑) / 공휴일 날짜 숫자 색상 분리 */
         .fc-day-sun .fc-day-num,
         .holiday-day .fc-day-num {
             color: #ef4444 !important;
         }
 
         .fc-day-sat .fc-day-num {
-            color: #3b82f6 !important;
+            color: #2563eb !important;
         }
 
         .fc-highlight {
@@ -448,6 +454,18 @@
                 border-bottom-color: #334155 !important;
             }
 
+            .fc th.fc-day-sun,
+            .fc th.fc-day-sun a,
+            .fc-col-header-cell.fc-day-sun {
+                color: #f87171 !important;
+            }
+
+            .fc th.fc-day-sat,
+            .fc th.fc-day-sat a,
+            .fc-col-header-cell.fc-day-sat {
+                color: #60a5fa !important;
+            }
+
             .fc-theme-standard td,
             .fc-theme-standard th {
                 border-color: #334155;
@@ -462,7 +480,7 @@
             }
 
             .fc-day-num {
-                color: #cbd5e1 !important;
+                color: #cbd5e1;
             }
 
             .fc-day-today {
@@ -478,13 +496,10 @@
             .fc-today-badge {
                 color: #60a5fa !important;
                 background-color: rgba(59, 130, 246, 0.22) !important;
-                border-color: rgba(59, 130, 246, 0.4) !important;
             }
 
-            .fc-holiday-tag {
+            .fc-holiday-name {
                 color: #f87171 !important;
-                background-color: rgba(239, 68, 68, 0.2) !important;
-                border-color: rgba(239, 68, 68, 0.3) !important;
             }
 
             .fc-day-sun .fc-day-num,
@@ -1098,7 +1113,7 @@
 
                         let leftTag = null;
                         if (holidayName && arg.view.type === 'dayGridMonth') {
-                            leftTag = `<span class="fc-holiday-tag" title="${holidayName}">${holidayName}</span>`;
+                            leftTag = `<span class="fc-holiday-name" title="${holidayName}">${holidayName}</span>`;
                         } else if (isToday && arg.view.type === 'dayGridMonth') {
                             leftTag = `<span class="fc-today-badge">오늘</span>`;
                         }
@@ -1122,26 +1137,27 @@
                     eventContent: function (arg) {
                         const start = new Date(arg.event.start);
                         const end = new Date(arg.event.end);
-                        const getFormat = (d) => {
+                        
+                        // ⚡ 시간 포맷팅: 9A30-3P 형식
+                        const formatSingle = (d) => {
                             let h = d.getHours();
-                            let m = d.getMinutes();
-                            const ampm = h < 12 ? '오전' : '오후';
+                            const m = d.getMinutes();
+                            const ampm = h < 12 ? 'A' : 'P';
                             let displayH = h > 12 ? h - 12 : h === 0 ? 12 : h;
-                            const mStr = m === 0 ? '' : `:${String(m).padStart(2, '0')}`;
-                            return `${ampm} ${displayH}${mStr}`;
+                            const mStr = m === 0 ? '' : String(m).padStart(2, '0');
+                            return `${displayH}${ampm}${mStr}`;
                         };
-                        const timeStr = `${getFormat(start)} ~ ${getFormat(end)}`;
+                        const timeStr = `${formatSingle(start)}-${formatSingle(end)}`;
                         const rawTitle = arg.event.title || '';
                         const dept = rawTitle.includes(']') ? rawTitle.split(']')[0].replace('[', '') : rawTitle;
                         const evColor = arg.event.extendedProps?.colorCode || '#3b82f6';
+                        
+                        // ⚡ 한 줄 포맷: [부서 / 시간]
                         return { 
-                            html: `<div style="background-color: ${evColor}1F; border-left: 3px solid ${evColor};" class="w-full px-2 py-1 rounded-md text-xs flex flex-col gap-0.5 leading-tight select-none shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-                                <div class="flex items-center justify-between gap-1">
-                                    <span class="font-bold truncate text-slate-800 dark:text-slate-100" style="color: ${evColor}; font-size: 0.72rem;">${dept}</span>
-                                </div>
-                                <div class="text-[9.5px] text-slate-500 dark:text-slate-400 font-medium tracking-tight truncate">
-                                    ${timeStr}
-                                </div>
+                            html: `<div style="background-color: ${evColor}18; border-left: 3px solid ${evColor};" class="w-full px-1.5 py-0.5 rounded text-[11px] flex items-center gap-1.5 leading-normal select-none overflow-hidden whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.03)]" title="${dept} (${timeStr})">
+                                <span class="font-bold shrink-0 text-slate-900 dark:text-white text-[11px]">${dept}</span>
+                                <span class="text-slate-400 dark:text-slate-500 text-[10px] shrink-0 font-normal">/</span>
+                                <span class="font-medium text-[10.5px] truncate" style="color: ${evColor};">${timeStr}</span>
                             </div>` 
                         };
                     },
