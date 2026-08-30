@@ -136,49 +136,134 @@
             animation-delay: 0.3s;
         }
 
-        /* 기본 (라이트모드) 캘린더 스타일 */
+        /* -------------------------------------------------------------
+           3. 세련된 모던 캘린더 UI 스타일 (Apple/Notion 스타일)
+        ------------------------------------------------------------- */
         .fc {
-            --fc-border-color: #e2e8f0;
-            --fc-today-bg-color: #f1f5f9;
-            background: white;
-            padding: 10px;
-            border-radius: 12px;
+            --fc-border-color: #f1f5f9;
+            --fc-today-bg-color: rgba(37, 99, 235, 0.03);
+            --fc-neutral-bg-color: transparent;
+            background: #ffffff;
+            padding: 1.25rem;
+            border-radius: 1.25rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 툴바 & 타이틀 */
+        .fc .fc-toolbar {
+            margin-bottom: 1.25rem !important;
+            gap: 0.75rem;
         }
 
         .fc .fc-toolbar-title {
-            font-size: 1.25rem !important;
+            font-size: 1.35rem !important;
+            font-weight: 800 !important;
+            color: #0f172a;
+            letter-spacing: -0.025em;
+        }
+
+        /* 툴바 버튼 - 세련된 세그먼트 컨트롤러 스타일 */
+        .fc .fc-button {
+            background-color: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #475569 !important;
+            font-weight: 600 !important;
+            font-size: 0.75rem !important;
+            padding: 0.4rem 0.8rem !important;
+            border-radius: 0.6rem !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .fc .fc-button:hover {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+            transform: translateY(-1px);
+        }
+
+        .fc .fc-button-active,
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #2563eb !important;
+            border-color: #2563eb !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+        }
+
+        .fc .fc-button-primary:disabled {
+            opacity: 0.4;
+        }
+
+        /* 요일 헤더 */
+        .fc th {
+            padding: 0.6rem 0 !important;
+            font-size: 0.75rem !important;
+            font-weight: 700 !important;
+            color: #64748b !important;
+            border: none !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        /* 날짜 셀 */
+        .fc-theme-standard td, .fc-theme-standard th {
+            border-color: #f1f5f9;
+        }
+
+        .fc-scrollgrid {
+            border-color: #e2e8f0 !important;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .fc-daygrid-day {
+            transition: background-color 0.15s ease;
+        }
+
+        .fc-daygrid-day:hover {
+            background-color: #f8faff;
+        }
+
+        .fc-daygrid-day-top {
+            padding: 4px 6px !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 0.8rem !important;
             font-weight: 600;
-            color: #1e293b;
+            color: #334155;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            margin: 2px;
+            transition: all 0.2s ease;
         }
 
-        .fc .fc-button-primary {
-            background-color: #1e40af !important;
-            border-color: #1e40af !important;
-            padding: 0.5rem 1rem;
+        /* 오늘 날짜 원형 뱃지 하이라이트 */
+        .fc-day-today .fc-daygrid-day-number {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
         }
 
-        .fc-event {
-            cursor: pointer;
-            padding: 2px 5px;
-            font-size: 0.75rem;
-            border-radius: 4px;
-        }
-
-        .fc-day-sun a {
+        /* 주말 및 공휴일 */
+        .fc-day-sun .fc-daygrid-day-number,
+        .holiday-day .fc-daygrid-day-number {
             color: #ef4444 !important;
-            text-decoration: none;
         }
 
-        .fc-day-sat a {
+        .fc-day-sat .fc-daygrid-day-number {
             color: #3b82f6 !important;
-            text-decoration: none;
         }
 
         .holiday-text {
             color: #ef4444;
-            font-size: 0.7rem;
-            font-weight: 500;
-            margin-top: 2px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            margin-top: 1px;
         }
 
         .holiday-day a {
@@ -186,45 +271,91 @@
         }
 
         .fc-highlight {
-            background-color: rgba(59, 130, 246, 0.15) !important;
+            background-color: rgba(59, 130, 246, 0.12) !important;
             box-shadow: inset 0 0 0 2px #3b82f6 !important;
+            border-radius: 6px;
+        }
+
+        /* 모던 이벤트 카드 애니메이션 */
+        .fc-event {
+            margin: 2px 3px !important;
+            border-radius: 6px !important;
+            border: none !important;
+            transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+        }
+
+        .fc-event:hover {
+            transform: translateY(-1px) scale(1.01);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+            z-index: 20 !important;
         }
 
         /* 모바일 최적화 */
         @media (max-width: 640px) {
+            .fc {
+                padding: 0.6rem;
+                border-radius: 0.85rem;
+            }
+
             .fc .fc-toolbar-title {
-                font-size: 0.9rem !important;
+                font-size: 1.05rem !important;
             }
 
             .fc .fc-button {
-                padding: 0.2rem 0.4rem !important;
+                padding: 0.3rem 0.55rem !important;
                 font-size: 0.7rem !important;
             }
 
             .fc-header-toolbar {
                 flex-wrap: wrap;
-                gap: 5px;
+                gap: 6px;
             }
         }
 
         /* 다크모드 캘린더 전용 스타일 */
         @media (prefers-color-scheme: dark) {
             body {
-                background-color: #0f172a;
+                background-color: #0b1120;
             }
 
             .fc {
                 background: #1e293b;
+                border-color: #334155;
                 --fc-border-color: #334155;
-                --fc-today-bg-color: #0f172a;
+                --fc-today-bg-color: rgba(37, 99, 235, 0.08);
                 --fc-page-bg-color: #1e293b;
                 --fc-neutral-text-color: #cbd5e1;
                 --fc-list-event-hover-bg-color: #334155;
+                box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
                 color: #f8fafc;
             }
 
             .fc .fc-toolbar-title {
-                color: #f1f5f9 !important;
+                color: #f8fafc !important;
+            }
+
+            .fc .fc-button {
+                background-color: #334155 !important;
+                border-color: #475569 !important;
+                color: #e2e8f0 !important;
+            }
+
+            .fc .fc-button:hover {
+                background-color: #475569 !important;
+                color: #ffffff !important;
+            }
+
+            .fc .fc-button-active,
+            .fc .fc-button-primary:not(:disabled).fc-button-active {
+                background-color: #3b82f6 !important;
+                border-color: #3b82f6 !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4) !important;
+            }
+
+            .fc th {
+                color: #94a3b8 !important;
+                border-bottom-color: #334155 !important;
             }
 
             .fc-theme-standard td,
@@ -232,21 +363,30 @@
                 border-color: #334155;
             }
 
-            .fc-col-header-cell-cushion,
-            .fc-daygrid-day-number {
-                color: #e2e8f0 !important;
-            }
-
             .fc-scrollgrid {
                 border-color: #334155 !important;
             }
 
-            .fc-day-sun a,
-            .holiday-day a {
+            .fc-daygrid-day:hover {
+                background-color: #243247;
+            }
+
+            .fc-col-header-cell-cushion,
+            .fc-daygrid-day-number {
+                color: #cbd5e1 !important;
+            }
+
+            .fc-day-today .fc-daygrid-day-number {
+                background-color: #3b82f6 !important;
+                color: #ffffff !important;
+            }
+
+            .fc-day-sun .fc-daygrid-day-number,
+            .holiday-day .fc-daygrid-day-number {
                 color: #f87171 !important;
             }
 
-            .fc-day-sat a {
+            .fc-day-sat .fc-daygrid-day-number {
                 color: #60a5fa !important;
             }
 
@@ -304,19 +444,22 @@
         // -------------------------------------------------------------
         // 2. React Bits - DotField 컴포넌트 (로그인 인터랙티브 배경)
         // -------------------------------------------------------------
+        // -------------------------------------------------------------
+        // 2. React Bits - DotField 컴포넌트 (다크/라이트 자동감지 & 가시성 대폭 강화)
+        // -------------------------------------------------------------
         const DotField = React.memo(({
-            dotRadius = 1.5,
-            dotSpacing = 16,
-            cursorRadius = 380,
-            cursorForce = 0.1,
+            dotRadius = 2.4,        // ⚡ 점 크기를 2.4로 키워 확실한 가시성 확보
+            dotSpacing = 18,       // ⚡ 시원한 간격
+            cursorRadius = 450,    // ⚡ 넓은 마우스 반응 반경
+            cursorForce = 0.15,
             bulgeOnly = true,
-            bulgeStrength = 55,
-            glowRadius = 180,
-            sparkle = true,
-            waveAmplitude = 0,
-            gradientFrom = 'rgba(59, 130, 246, 0.30)',
-            gradientTo = 'rgba(148, 163, 184, 0.15)',
-            glowColor = 'rgba(59, 130, 246, 0.12)',
+            bulgeStrength = 85,    // ⚡ 마우스 호버 시 돋보기 효과 대폭 강화
+            glowRadius = 220,      // ⚡ 부드러운 오라 글로우
+            sparkle = true,        // ⚡ 별빛 반짝임 효과
+            waveAmplitude = 3.5,   // ⚡ 가만히 있어도 살아 숨쉬듯 은은하게 움직이는 파도 애니메이션
+            gradientFrom,
+            gradientTo,
+            glowColor,
             ...rest
         }) => {
             const canvasRef = React.useRef(null);
@@ -329,9 +472,38 @@
             const glowOpacity = React.useRef(0);
             const engagement = React.useRef(0);
             const propsRef = React.useRef({});
-            propsRef.current = { dotRadius, dotSpacing, cursorRadius, cursorForce, bulgeOnly, bulgeStrength, sparkle, waveAmplitude, gradientFrom, gradientTo };
             const rebuildRef = React.useRef(null);
             const glowIdRef = React.useRef(`dot-field-glow-${Math.random().toString(36).slice(2, 9)}`);
+
+            // ⚡ 1. 다크모드 / 라이트모드 실시간 자동 감지
+            const [isDarkMode, setIsDarkMode] = React.useState(() => {
+                return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            });
+
+            React.useEffect(() => {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                const handler = (e) => setIsDarkMode(e.matches);
+                mediaQuery.addEventListener('change', handler);
+                return () => mediaQuery.removeEventListener('change', handler);
+            }, []);
+
+            // ⚡ 2. 테마별 뚜렷하고 세련된 색상 매핑
+            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.70)' : 'rgba(37, 99, 235, 0.55)');
+            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(167, 139, 250, 0.55)' : 'rgba(99, 102, 241, 0.40)');
+            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.35)' : 'rgba(37, 99, 235, 0.22)');
+
+            propsRef.current = { 
+                dotRadius, 
+                dotSpacing, 
+                cursorRadius, 
+                cursorForce, 
+                bulgeOnly, 
+                bulgeStrength, 
+                sparkle, 
+                waveAmplitude, 
+                gradientFrom: activeGradFrom, 
+                gradientTo: activeGradTo 
+            };
 
             React.useEffect(() => {
                 const canvas = canvasRef.current;
@@ -481,7 +653,7 @@
                         let drawY = d.sy;
                         if (p.waveAmplitude > 0) {
                             drawY += Math.sin(d.ax * 0.03 + t) * p.waveAmplitude;
-                            drawX += Math.cos(d.ay * 0.03 + t * 0.7) * p.waveAmplitude * 0.5;
+                            drawX += Math.cos(d.ay * 0.03 + t * 0.7) * (p.waveAmplitude * 0.6);
                         }
 
                         if (p.sparkle) {
@@ -524,7 +696,7 @@
 
             React.useEffect(() => {
                 rebuildRef.current?.();
-            }, [dotRadius, dotSpacing]);
+            }, [dotRadius, dotSpacing, isDarkMode]);
 
             return (
                 <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden" {...rest}>
@@ -549,7 +721,7 @@
                     >
                         <defs>
                             <radialGradient id={glowIdRef.current}>
-                                <stop offset="0%" stopColor={glowColor} />
+                                <stop offset="0%" stopColor={activeGlow} />
                                 <stop offset="100%" stopColor="transparent" />
                             </radialGradient>
                         </defs>
@@ -826,18 +998,23 @@
                         const getFormat = (d) => {
                             let h = d.getHours();
                             let m = d.getMinutes();
-                            const ampm = h < 12 ? 'A' : 'P';
-                            if (h > 12) h -= 12;
-                            if (h === 0) h = 12;
-                            const mStr = m === 0 ? '' : m;
-                            return `${h}${ampm}${mStr}`;
+                            const ampm = h < 12 ? '오전' : '오후';
+                            let displayH = h > 12 ? h - 12 : h === 0 ? 12 : h;
+                            const mStr = m === 0 ? '' : `:${String(m).padStart(2, '0')}`;
+                            return `${ampm} ${displayH}${mStr}`;
                         };
-                        const timeStr = `${getFormat(start)}~${getFormat(end)}`;
-                        const dept = arg.event.title.split(']')[0] + ']';
-                        const evColor = arg.event.extendedProps.colorCode || '#64748b';
+                        const timeStr = `${getFormat(start)} ~ ${getFormat(end)}`;
+                        const rawTitle = arg.event.title || '';
+                        const dept = rawTitle.includes(']') ? rawTitle.split(']')[0].replace('[', '') : rawTitle;
+                        const evColor = arg.event.extendedProps?.colorCode || '#3b82f6';
                         return { 
-                            html: `<div style="border-left: 4px solid ${evColor}; background-color: ${evColor}1A; padding: 2px 6px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem; color: var(--fc-neutral-text-color, #333);">
-                                <b style="color: ${evColor};">${timeStr}</b> ${dept}
+                            html: `<div style="background-color: ${evColor}1F; border-left: 3px solid ${evColor};" class="w-full px-2 py-1 rounded-md text-xs flex flex-col gap-0.5 leading-tight select-none shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-bold truncate text-slate-800 dark:text-slate-100" style="color: ${evColor}; font-size: 0.72rem;">${dept}</span>
+                                </div>
+                                <div class="text-[9.5px] text-slate-500 dark:text-slate-400 font-medium tracking-tight truncate">
+                                    ${timeStr}
+                                </div>
                             </div>` 
                         };
                     },
