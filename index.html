@@ -613,10 +613,10 @@
                 return () => mediaQuery.removeEventListener('change', handler);
             }, []);
 
-            // ⚡ 웹사이트 맞춤형 은은한 소프트 그라데이션 컬러
-            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.40)' : 'rgba(59, 130, 246, 0.35)');
-            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(192, 132, 252, 0.30)' : 'rgba(147, 51, 234, 0.25)');
-            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.20)' : 'rgba(59, 130, 246, 0.15)');
+            // ⚡ 웹사이트 맞춤형 컬러 (라이트모드 시인성 강화 & 다크모드 자연스러움 유지)
+            const activeGradFrom = gradientFrom || (isDarkMode ? 'rgba(96, 165, 250, 0.40)' : 'rgba(37, 99, 235, 0.55)');
+            const activeGradTo = gradientTo || (isDarkMode ? 'rgba(192, 132, 252, 0.30)' : 'rgba(124, 58, 237, 0.42)');
+            const activeGlow = glowColor || (isDarkMode ? 'rgba(96, 165, 250, 0.20)' : 'rgba(37, 99, 235, 0.22)');
 
             propsRef.current = { 
                 dotRadius, 
