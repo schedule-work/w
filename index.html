@@ -1177,12 +1177,12 @@
                         const dept = rawTitle.includes(']') ? rawTitle.split(']')[0].replace('[', '') : rawTitle;
                         const evColor = arg.event.extendedProps?.colorCode || '#3b82f6';
                         
-                        // ⚡ 세련된 소프트 파스텔 한 줄 포맷: [부서 / 시간]
+                        // ⚡ 세련된 소프트 파스텔 한 줄 포맷: [시간 / 부서] (예: 2P30-5P / 50병동)
                         return { 
-                            html: `<div style="background-color: ${evColor}12; border-left: 2.5px solid ${evColor}99;" class="w-full px-1.5 py-0.5 rounded text-[11px] flex items-center gap-1.5 leading-normal select-none overflow-hidden whitespace-nowrap" title="${dept} (${timeStr})">
-                                <span class="font-semibold shrink-0 text-slate-700 dark:text-slate-200 text-[11px]">${dept}</span>
+                            html: `<div style="background-color: ${evColor}12; border-left: 2.5px solid ${evColor}99;" class="w-full px-1.5 py-0.5 rounded text-[11px] flex items-center gap-1.5 leading-normal select-none overflow-hidden whitespace-nowrap" title="${timeStr} / ${dept}">
+                                <span class="font-bold shrink-0 text-slate-800 dark:text-slate-100 text-[10.5px]">${timeStr}</span>
                                 <span class="text-slate-300 dark:text-slate-600 text-[9.5px] shrink-0 font-light">/</span>
-                                <span class="font-medium text-[10.5px] truncate text-slate-500 dark:text-slate-400">${timeStr}</span>
+                                <span class="font-medium text-[11px] truncate text-slate-600 dark:text-slate-300">${dept}</span>
                             </div>` 
                         };
                     },
