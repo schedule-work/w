@@ -117,6 +117,7 @@
             border-spacing: 0;
             font-size: 12px;
             line-height: 1.35;
+            table-layout: fixed;
         }
         table.sheet-table td {
             border: 1px solid #e5e3da;
@@ -125,6 +126,7 @@
             text-align: center;
             vertical-align: middle;
             background-color: #fff;
+            overflow: hidden;
         }
         .sheet-block-wrap {
             margin-bottom: 32px;
@@ -243,19 +245,29 @@
         let currentRenderedKey = null;
 
         // ══════════════════════════ API 계층 ══════════════════════════
+        // fetch가 원인 불명으로 오래 멈춰있는 상황(응답이 아주 늦거나 안 옴)을 방지하기 위한 타임아웃 래퍼
+        async function fetchJson(url, timeoutMs = 20000) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const res = await fetch(url, { signal: controller.signal });
+                return await res.json();
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
         async function fetchSingleSheet(group, gid) {
             const key = `${group}:${gid}`;
             if (sheetDataCache.has(key)) return sheetDataCache.get(key);
-            const res = await fetch(`${sheetGroups[group].api}?sheet=${gid}`);
-            const payload = await res.json();
+            const payload = await fetchJson(`${sheetGroups[group].api}?sheet=${gid}`);
             sheetDataCache.set(key, payload);
             return payload;
         }
 
         function ensureGroupIndexed(group) {
             if (groupIndexCache.has(group)) return groupIndexCache.get(group);
-            const promise = fetch(`${sheetGroups[group].api}?all=1`)
-                .then(res => res.json())
+            const promise = fetchJson(`${sheetGroups[group].api}?all=1`)
                 .then(list => {
                     const records = [];
                     list.forEach(payload => {
@@ -270,7 +282,10 @@
                                 const name = String(row[block.nameCol] || '').trim();
                                 if (!name) continue;
                                 const empId = block.idCol !== -1 ? String(row[block.idCol] || '').trim() : '';
-                                const dedupeKey = name + '|' + empId;
+                                // 사번이 없는 시트(예: 통합항암 전담)에서 동명이인을 구분하기 위해,
+                                // 블록 안에서 헤더 바로 다음부터 몇 번째 줄인지(seat)도 같이 기록한다.
+                                const seat = r - (block.headerRowIndex + block.headerRowCount);
+                                const dedupeKey = empId ? (name + '|' + empId) : (name + '|seat' + seat);
                                 if (seen.has(dedupeKey)) continue;
                                 seen.add(dedupeKey);
                                 records.push({
@@ -279,11 +294,25 @@
                                     gid: payload.gid,
                                     sheetName: payload.name,
                                     name,
-                                    empId
+                                    empId,
+                                    seat
                                 });
                             }
                         });
                     });
+
+                    // 사번이 없는데 같은 시트에 이름이 겹치는 경우(동명이인 가능성) 표시용 카운트 부여
+                    const nameCounts = new Map();
+                    records.forEach(r => {
+                        if (r.empId) return;
+                        const k = `${r.group}:${r.gid}:${r.name}`;
+                        nameCounts.set(k, (nameCounts.get(k) || 0) + 1);
+                    });
+                    records.forEach(r => {
+                        if (r.empId) return;
+                        r.duplicateCount = nameCounts.get(`${r.group}:${r.gid}:${r.name}`) || 1;
+                    });
+
                     return records;
                 })
                 .catch(err => {
@@ -369,12 +398,13 @@
                 const name = String((values[r] && values[r][nameCol]) || '').trim();
                 if (!name) continue;
                 const empId = idCol !== -1 ? String((values[r] && values[r][idCol]) || '').trim() : '';
-                meta[r] = { name, empId };
+                const seat = r - (headerRowIndex + headerRowCount);
+                meta[r] = { name, empId, seat };
             }
             return meta;
         }
 
-        // 월별 블록을 별도의 payload로 잘라낸다 (merges 좌표도 블록 기준으로 재계산)
+        // 월별 블록을 별도의 payload로 잘라낸다 (merges 좌표도 블록 기준으로 재계산, 열 너비는 시트 전체 기준이라 그대로 물려줌)
         function sliceGrid(payload, start, end) {
             let values = payload.values.slice(start, end).map(r => r.slice());
             let backgrounds = (payload.backgrounds || []).slice(start, end).map(r => r.slice());
@@ -395,15 +425,16 @@
                 }))
                 .filter(m => m.numRows >= 1);
 
-            return { values, backgrounds, fontColors, fontWeights, merges, gid: payload.gid, name: payload.name };
+            return { values, backgrounds, fontColors, fontWeights, merges, columnWidths: payload.columnWidths, gid: payload.gid, name: payload.name };
         }
 
         // ══════════════════════════ 렌더링 ══════════════════════════
         function buildTable(container, payload, opts) {
             opts = opts || {};
             const rowMeta = opts.rowMeta || {};
-            const { values, backgrounds, fontColors, fontWeights, merges } = payload;
+            const { values, backgrounds, fontColors, fontWeights, merges, columnWidths } = payload;
             const rowCount = values.length;
+            const colCountTotal = rowCount ? values[0].length : 0;
 
             const covered = new Set();
             const mergeMap = new Map();
@@ -420,12 +451,25 @@
             const table = document.createElement('table');
             table.className = 'sheet-table';
 
+            // 원본 구글시트 열 너비를 그대로 반영(고정폭 레이아웃) — 없으면 브라우저 기본(내용 기준) 사용
+            if (columnWidths && columnWidths.length) {
+                const colgroup = document.createElement('colgroup');
+                for (let c = 0; c < colCountTotal; c++) {
+                    const col = document.createElement('col');
+                    const w = columnWidths[c];
+                    if (w) col.style.width = w + 'px';
+                    colgroup.appendChild(col);
+                }
+                table.appendChild(colgroup);
+            }
+
             for (let r = 0; r < rowCount; r++) {
                 const tr = document.createElement('tr');
                 const meta = rowMeta[r];
                 if (meta) {
                     tr.dataset.person = meta.name;
                     tr.dataset.empId = meta.empId || '';
+                    tr.dataset.seat = String(meta.seat);
                 }
                 const row = values[r] || [];
                 const colCount = row.length;
@@ -564,9 +608,11 @@
             let target = null;
             trs.forEach(tr => {
                 tr.classList.remove('row-highlight');
-                if (!target && tr.dataset.person === rec.name && (!rec.empId || tr.dataset.empId === rec.empId)) {
-                    target = tr;
-                }
+                if (target) return;
+                if (tr.dataset.person !== rec.name) return;
+                // 사번이 있으면 사번으로, 없으면(동명이인 구분용) 시트 안에서의 줄 위치(seat)로 매칭
+                const idMatches = rec.empId ? tr.dataset.empId === rec.empId : String(tr.dataset.seat) === String(rec.seat);
+                if (idMatches) target = tr;
             });
             if (target) {
                 target.classList.add('row-highlight');
@@ -627,11 +673,14 @@
                 const item = document.createElement('button');
                 item.type = 'button';
                 item.className = 'search-item block w-full text-left px-3 py-2 text-sm border-b border-gray-100';
+                const dupHint = (!rec.empId && rec.duplicateCount > 1)
+                    ? `<span class="text-amber-600">· 동명이인 ${rec.seat + 1}/${rec.duplicateCount}번째 줄</span>`
+                    : '';
                 item.innerHTML = `
                     <span class="font-medium">${escapeHtml(rec.name)}</span>
                     ${rec.empId ? `<span class="text-gray-400">(${escapeHtml(rec.empId)})</span>` : ''}
                     <br>
-                    <span class="text-[10px] text-gray-400 uppercase tracking-wide">${escapeHtml(rec.groupName)} · ${escapeHtml(rec.sheetName)}</span>
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wide">${escapeHtml(rec.groupName)} · ${escapeHtml(rec.sheetName)} ${dupHint}</span>
                 `;
                 item.onclick = () => {
                     dropdown.classList.add('hidden');
