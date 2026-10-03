@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#163d2e">
+  <meta name="description" content="점프 하나로 떠나는 작은 숲속 모험. 도토리와 땅콩을 모으고 최고 기록에 도전하세요.">
+  <title>다람쥐의 모험</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="style.css?v=14">
+  <style>
+    .character-select{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-content:center;gap:10px;margin:0 auto 18px;max-width:360px}
+    .character-choice{cursor:pointer;border:2px solid #54703b;border-radius:0;background:#d9e8b6;color:#294928;font:700 13px 'Courier New',monospace;letter-spacing:1px;padding:9px 10px 8px;box-shadow:0 3px #294928;text-align:left;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+    .character-choice strong{font-size:14px;letter-spacing:0}
+    .character-choice small{font:700 10px/1.2 'Courier New',monospace;letter-spacing:0;color:#53683e}
+    .character-choice:hover,.character-choice.selected{background:#f7c75b;border-color:#4f361e;color:#4a361f}
+    .character-choice:active{transform:translateY(2px);box-shadow:0 1px #294928}
+    .character-choice:focus-visible{outline:3px solid white;outline-offset:4px}
+    .ability-hint{margin:0 0 14px;color:#405637;font:700 12px/1.4 'Courier New',monospace;letter-spacing:.5px;text-shadow:0 1px #e5efc8}
+    .mission-text{margin:0 0 12px;color:#53683e;font:700 11px/1.4 'Courier New',monospace}
+    .story-text{max-width:310px;margin:0 auto 12px;color:#405637;font:700 11px/1.5 'Courier New',monospace;text-shadow:0 1px #e5efc8}
+    .map-button{cursor:pointer;border:1px solid #7d9364;background:#e8efcf;color:#405637;font:700 10px 'Courier New',monospace;padding:6px 10px;box-shadow:0 2px #536044;margin-bottom:10px}
+    .map-button:hover{background:#f7c75b;color:#4a361f;border-color:#4f361e}
+    .map-overlay{position:absolute;z-index:8;inset:5%;display:flex;align-items:center;justify-content:center;background:#193d2eee;padding:18px}
+    .map-card{width:min(390px,100%);border:2px solid #aecb80;background:#e8efcf;color:#405637;padding:18px 14px;box-shadow:0 0 0 5px #183424;text-align:center}
+    .map-card h2{margin:0 0 14px;color:#405637;font:bold 22px 'Courier New',monospace;letter-spacing:2px}
+    .map-path{display:flex;align-items:stretch;justify-content:center;gap:5px;margin:12px 0 18px}
+    .map-node{flex:1;border:2px solid #78905f;background:#d4e2b9;color:#405637;padding:9px 4px;font:bold 9px/1.4 'Courier New',monospace;cursor:pointer}
+    .map-node:hover,.map-node.selected{background:#f7c75b;color:#4a361f;border-color:#4f361e}
+    .map-node:disabled{cursor:not-allowed;opacity:.45;filter:grayscale(.5)}
+    .map-node small{display:block;margin-top:5px;font-weight:400;font-size:8px}
+    .map-node.boss{background:#e8c58b;border-color:#8d5b39}.map-arrow{align-self:center;color:#78905f;font-weight:bold}
+    .map-close{border:2px solid #4f361e;background:#f7c75b;color:#4a361f;font:bold 12px 'Courier New',monospace;padding:7px 18px;cursor:pointer}
+    #stageHud{align-self:flex-start;color:#fff7d4;font:bold 11px 'Courier New',monospace;letter-spacing:1px;text-align:center;margin-top:2px}
+    .option-row,.skin-select{display:flex;justify-content:center;gap:8px;margin:0 0 12px}
+    .option-button,.skin-button{cursor:pointer;border:1px solid #7d9364;background:#e8efcf;color:#405637;font:700 10px 'Courier New',monospace;padding:6px 9px;box-shadow:0 2px #536044}
+    .option-button:hover,.option-button.active,.skin-button:hover,.skin-button.selected{background:#f7c75b;color:#4a361f;border-color:#4f361e}
+    .skin-button:disabled{cursor:not-allowed;opacity:.5;box-shadow:none}
+    .pause-button{position:absolute;z-index:4;top:12px;left:50%;transform:translateX(-50%);display:none;cursor:pointer;border:2px solid #294928;background:#e8efcf;color:#294928;font:bold 12px 'Courier New',monospace;padding:5px 10px;box-shadow:0 2px #294928}
+    #game.playing .pause-button,#game.paused .pause-button{display:block}
+    .attack-button{position:absolute;z-index:4;right:12px;bottom:12px;display:none;cursor:pointer;border:2px solid #4f361e;background:#f7c75b;color:#4a361f;font:bold 12px 'Courier New',monospace;padding:8px 11px;box-shadow:0 3px #4f361e;touch-action:manipulation}
+    #game.playing .attack-button,#game.paused .attack-button{display:block}
+    .move-button{position:absolute;z-index:4;bottom:12px;display:none;width:42px;height:38px;cursor:pointer;border:2px solid #294928;background:#e8efcf;color:#294928;font:bold 18px 'Courier New',monospace;box-shadow:0 3px #294928;touch-action:none}
+    .move-left{left:12px}.move-right{left:62px}
+    #game.playing .move-button,#game.paused .move-button{display:block}
+    .secondary-button{margin-top:14px;background:#d9e8b6;font-size:16px;min-height:42px;padding:9px 18px}
+    .secondary-button:hover{background:#c8dba0}
+    @media(max-width:650px){.character-select{margin-bottom:13px}.character-choice{font-size:12px;padding:7px 9px}.character-choice strong{font-size:13px}.character-choice small{font-size:9px}}
+
+    /* Keep the original wide arcade layout; the later portrait rules are for a different build. */
+    html,body{background:#163d2e;color:#f4efce}
+    body{background:radial-gradient(ellipse at 50% 32%,#2e5940 0,#193d2e 55%,#102b22 100%)}
+    main{min-height:100svh;padding:42px 5vw;display:flex;align-items:center;justify-content:center}
+    .cabinet{width:min(1120px,100%)}
+    #game{width:min(520px,100%);aspect-ratio:2/3;max-height:none;border:5px solid #0c281e;outline:1px solid #6b8753;box-shadow:0 9px 0 #0c281e,0 12px 0 #4d6743,0 28px 70px #071c1a88;background:#c8e9ad}
+    canvas{object-fit:contain}
+    .overlay{padding-bottom:9%}
+    #start{inset:0;height:auto;padding:0 0 9%;justify-content:center}
+    #start .logo-title{width:96%;margin:0 0 26px}
+    .vignette{display:block;box-shadow:inset 0 0 70px #214c2022}
+    #hud{color:#fff7d4;text-shadow:2px 2px #294928,-1px -1px #294928}
+    .pixel-button{background:#f7c75b;border:3px solid #4f361e;color:#4a361f;box-shadow:inset 0 3px #ffe8a5,inset -3px -3px #db9b37,0 5px #4f361e}
+    .pixel-button:hover{background:#ffda79}
+    .over-card{background:#193d2eeb;border:3px solid #aecb80;box-shadow:0 0 0 5px #183424}
+    h2{color:#fff0bb}
+    .results strong,#newBest{color:#f7cb63}
+    @media(max-width:650px){main{padding:24px 12px}.cabinet{width:100%}#game{width:100%;aspect-ratio:2/3;border-width:3px}.overlay{padding-bottom:12%}#start{padding-bottom:12%}h1{font-size:35px}.pixel-button{min-width:146px;padding:10px 14px;font-size:19px}}
+  </style>
+</head>
+<body>
+  <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="게임 바깥 배경 다크모드">다크모드 <span id="themeState">OFF</span></button>
+  <main>
+    <div class="cabinet">
+      <section id="game" aria-label="다람쥐의 모험 게임">
+        <canvas id="world" width="360" height="540" aria-label="짧게 누르면 낮은 점프, 길게 누르면 높은 점프"></canvas>
+        <div class="vignette"></div>
+        <button id="pauseButton" class="pause-button" type="button" aria-label="일시정지">PAUSE</button>
+        <button id="attackButton" class="attack-button" type="button" aria-label="공격">ATTACK <span>✦</span></button>
+        <button id="leftButton" class="move-button move-left" type="button" aria-label="왼쪽 이동">◀</button>
+        <button id="rightButton" class="move-button move-right" type="button" aria-label="오른쪽 이동">▶</button>
+        <div id="hud" hidden><div>BEST<strong id="best">000000</strong></div><div id="stageHud">GREEN WOODS</div><div id="comboHud" hidden>COMBO<strong id="combo">x1</strong></div><div>SCORE<strong id="score">000000</strong></div></div>
+        <div id="start" class="overlay">
+          <h1 class="logo-title"><img src="title-logo-transparent.png" width="2172" height="724" alt="다람쥐의 모험 — CHIPMUNK ADVENTURE" draggable="false"></h1>
+          <div class="character-select" role="group" aria-label="게임 캐릭터 선택">
+            <button type="button" class="character-choice selected" data-character="squirrel" aria-pressed="true"><strong>다람쥐</strong><small>공중 2단 점프</small></button>
+            <button type="button" class="character-choice" data-character="tiger" aria-pressed="false"><strong>아기 호랑이</strong><small>강한 착지 + 불꽃</small></button>
+          </div>
+          <p id="abilityHint" class="ability-hint">능력: 공중 2단 점프</p>
+          <p id="storyText" class="story-text">작은 숲을 지나 잃어버린 보물을 찾아 떠나세요.</p>
+          <button id="mapButton" class="map-button" type="button">WORLD MAP</button>
+          <p id="missionText" class="mission-text"></p>
+          <div class="skin-select" role="group" aria-label="스킨 선택">
+            <button type="button" class="skin-button selected" data-skin="classic">기본 스킨</button>
+            <button type="button" class="skin-button" data-skin="gold" disabled>황금 스킨 🔒</button>
+          </div>
+          <div class="option-row" role="group" aria-label="사운드 설정">
+            <button id="soundToggle" class="option-button" type="button">효과음 ON</button>
+            <button id="musicToggle" class="option-button" type="button">음악 ON</button>
+          </div>
+          <button id="startButton" class="pixel-button">START <span>▶</span></button>
+        </div>
+        <div id="mapOverlay" class="map-overlay" hidden>
+          <div class="map-card">
+            <h2>ADVENTURE MAP</h2>
+            <div class="map-path">
+              <button class="map-node" data-stage="0" type="button">GREEN<br>WOODS<small>숲의 시작</small></button><span class="map-arrow">›</span>
+              <button class="map-node" data-stage="1" type="button">SUNSET<br>RIDGE<small>붉은 능선</small></button><span class="map-arrow">›</span>
+              <button class="map-node" data-stage="2" type="button">NIGHT<br>GROVE<small>밤의 수호자</small></button><span class="map-arrow">›</span>
+              <button class="map-node boss" data-stage="3" type="button">SNOW<br>PEAK<small>최종 보스</small></button>
+            </div>
+            <p id="mapDescription" class="story-text">점프와 공격으로 네 지역을 돌파하세요.</p>
+            <button id="mapClose" class="map-close" type="button">CLOSE</button>
+          </div>
+        </div>
+        <div id="over" class="overlay" hidden>
+          <div class="over-card"><h2>GAME OVER</h2><p id="newBest" hidden>NEW BEST!</p><div class="results"><div>SCORE<strong id="finalScore">0</strong></div><div>BEST<strong id="finalBest">0</strong></div></div><button id="restartButton" class="pixel-button">RESTART <span>↻</span></button><button id="homeButton" class="pixel-button secondary-button">HOME <span>⌂</span></button></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="game.js?v=14"></script>
+  <script src="theme.js"></script>
+</body>
+</html>
