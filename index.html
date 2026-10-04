@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#163d2e">
   <meta name="description" content="점프 하나로 떠나는 작은 숲속 모험. 도토리와 땅콩을 모으고 최고 기록에 도전하세요.">
-  <title>다람쥐의 모험</title>
+  <title>Tiger's Adventure</title>
   <link rel="icon" href="favicon.svg">
   <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="reboot-ui.css?v=1">
   <style>
     .character-select{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-content:center;gap:10px;margin:0 auto 18px;max-width:360px}
     .character-choice{cursor:pointer;border:2px solid #54703b;border-radius:0;background:#d9e8b6;color:#294928;font:700 13px 'Courier New',monospace;letter-spacing:1px;padding:9px 10px 8px;box-shadow:0 3px #294928;text-align:left;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:4px}
@@ -84,7 +85,7 @@
         <button id="attackButton" class="attack-button" type="button" aria-label="공격">ATTACK <span>✦</span></button>
         <div id="hud" hidden><div>BEST<strong id="best">000000</strong></div><div>COINS<strong id="coins">000</strong></div><div id="stageHud">GREEN WOODS</div><div id="comboHud" hidden>COMBO<strong id="combo">x1</strong></div><div>SCORE<strong id="score">000000</strong></div></div>
         <div id="start" class="overlay">
-          <h1 class="logo-title"><img src="title-logo-transparent.png" width="2172" height="724" alt="다람쥐의 모험 — CHIPMUNK ADVENTURE" draggable="false"></h1>
+          <h1 class="logo-title"><img src="tiger-title-logo-sprite-character-transparent.png" width="2048" height="768" alt="Tiger's Adventure" draggable="false"></h1>
           <div class="character-select" role="group" aria-label="게임 캐릭터 선택">
             <button type="button" class="character-choice selected" data-character="squirrel" aria-pressed="true"><strong>다람쥐</strong><small>공중 2단 점프</small></button>
             <button type="button" class="character-choice" data-character="tiger" aria-pressed="false"><strong>아기 호랑이</strong><small>강한 착지 + 불꽃</small></button>

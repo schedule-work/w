@@ -1,0 +1,67 @@
+/* Tiger's Adventure — complete arcade UI direction. */
+:root{
+  --ink:#162b25;--deep:#081b18;--forest:#123c31;--forest-2:#1d5941;
+  --mint:#bcd886;--cream:#fff4cf;--gold:#ffd160;--orange:#e87938;
+  --line:#628753;--muted:#a6bd8c;--shadow:#061813;
+}
+html,body{min-height:100%;background:#081b18;color:var(--cream)}
+body{font-family:PixelKo,'Courier New',monospace;background:radial-gradient(circle at 50% 18%,#2d644a 0,#12392e 38%,#071b18 100%);overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;z-index:-1;pointer-events:none;border-radius:50%;filter:blur(2px);opacity:.45}
+body::before{width:280px;height:280px;left:-130px;top:24%;background:#6f9d45}
+body::after{width:340px;height:340px;right:-170px;bottom:3%;background:#a36f35}
+main{min-height:100svh;padding:42px 18px;display:flex;align-items:center;justify-content:center}
+.cabinet{width:min(470px,100%);position:relative}
+.bezel{margin:0 5px 12px;display:flex;justify-content:space-between;align-items:center;color:#c5d9a2;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.bezel::before{content:"JUNGLE RUN / 01";color:#f0c866}.bezel span:first-child{display:none}.bezel span:last-child{font-size:10px;color:#8eae78}
+#game{position:relative;width:100%;aspect-ratio:2/3;overflow:hidden;border:4px solid #081b18;border-radius:16px 16px 22px 22px;outline:1px solid #79985b;box-shadow:0 9px 0 #061712,0 13px 0 #486244,0 28px 70px #020e0caa;background:#b7d699;isolation:isolate}
+#game::before{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;border:1px solid #ffffff2b;border-radius:11px 11px 18px 18px;box-shadow:inset 0 0 42px #071b1444}
+#game::after{content:"";position:absolute;z-index:5;left:18px;right:18px;bottom:7px;height:2px;background:#ffffff33;pointer-events:none}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+.vignette{z-index:2;pointer-events:none;box-shadow:inset 0 0 100px #071c1a44}
+
+/* Start screen */
+#start{z-index:3;inset:0;height:100%;justify-content:flex-start;overflow-y:auto;padding:12px 15px 18px;scrollbar-width:thin;scrollbar-color:#7e9e5d transparent;background:linear-gradient(180deg,#071b1855,#071b1888)}
+#start::before{content:"";position:absolute;z-index:-1;inset:8px;border:1px solid #a8c57688;border-radius:11px 11px 17px 17px;background:linear-gradient(160deg,#174c39ee,#0d2c24eb 72%,#0a241ee8);box-shadow:inset 0 0 0 3px #071b1866,0 8px 16px #020e0c66;pointer-events:none}
+#start .logo-title{width:100%;margin:0 0 8px;line-height:0;filter:drop-shadow(0 7px 0 #061611) drop-shadow(0 0 8px #ffd66b55);animation:logoFloat 4s ease-in-out infinite}
+#start .logo-title img{width:100%;height:auto;display:block}
+@keyframes logoFloat{50%{transform:translateY(-3px)}}
+#start .character-select{width:min(100%,370px);gap:8px;margin:0 auto 8px}
+#start .character-choice{position:relative;min-height:62px;padding:9px 10px 8px 17px;border:2px solid #416d4b;border-radius:6px;background:linear-gradient(145deg,#24583f,#14392e);box-shadow:0 4px 0 #061b15,0 0 0 1px #0e271e;color:#e8efbe;text-align:left;transition:transform .15s ease,filter .15s ease,background .15s ease}
+#start .character-choice::before{content:"";position:absolute;left:6px;top:9px;bottom:9px;width:4px;border-radius:2px;background:#6e9a55}
+#start .character-choice::after{content:"SELECT";position:absolute;right:8px;top:7px;font:bold 7px 'Courier New',monospace;letter-spacing:1px;color:#8caf68;opacity:0}
+#start .character-choice strong{display:block;font-size:15px;color:#fff2b9;letter-spacing:0}#start .character-choice small{display:block;margin-top:5px;font-size:9px;color:#abc58a}
+#start .character-choice:hover{filter:brightness(1.15);transform:translateY(-2px)}
+#start .character-choice.selected{border-color:#ffd261;background:linear-gradient(145deg,#ae7130,#774523);box-shadow:0 4px 0 #3e2719,0 0 0 1px #ffeaa0;color:#fff8ce}
+#start .character-choice.selected::before{background:#ffe28a}#start .character-choice.selected::after{opacity:1;color:#ffe28a}#start .character-choice.selected small{color:#ffe2a3}
+#start .ability-hint{display:flex;align-items:center;justify-content:center;width:max-content;max-width:100%;min-height:26px;margin:0 auto 5px;padding:4px 12px;border:1px solid #688c51;border-radius:99px;background:#071b18aa;color:#d9edaa;font:bold 10px/1.2 'Courier New',monospace;letter-spacing:.4px}
+#start .story-text{max-width:350px;margin:0 auto 6px;color:#e6edbd;text-shadow:1px 2px #061b15;font:700 10px/1.45 'Courier New',monospace}
+#start .mission-text{min-height:14px;margin:0 auto 5px;color:#ffd76b;font:700 9px 'Courier New',monospace;text-shadow:1px 1px #061b15}
+#start .map-button{min-height:31px;margin:0 auto 7px;padding:6px 15px;border:1px solid #86a866;border-radius:4px;background:#2c6948;color:#f8efb7;box-shadow:0 3px 0 #061b15;font:bold 10px 'Courier New',monospace;letter-spacing:1px;transition:transform .15s ease,filter .15s ease}
+#start .map-button:hover{filter:brightness(1.16);transform:translateY(-2px)}
+#start .skin-select,#start .option-row{gap:6px;margin:0 auto 7px}
+#start .skin-button,#start .option-button{min-height:30px;padding:6px 9px;border:1px solid #507c4d;border-radius:4px;background:#143b2e;color:#bcd790;box-shadow:0 2px 0 #061b15;font:700 9px 'Courier New',monospace}
+#start .skin-button:hover:not(:disabled),#start .option-button:hover{background:#2d6746;color:#fff1ba}
+#start .skin-button.selected,#start .option-button.active{background:#4f8150;border-color:#b7d879;color:#fff2b7}
+#start .pixel-button{min-width:220px;min-height:55px;margin-top:2px;border:3px solid #5b351d;border-radius:5px;background:linear-gradient(180deg,#ffe47c,#ec9d3e);box-shadow:inset 0 3px #fff5bd,0 5px 0 #3a2518,0 0 0 2px #ffca56;color:#54321b;font:bold 23px 'Courier New',monospace;letter-spacing:4px;transition:transform .12s ease,filter .12s ease}
+#start .pixel-button:hover{filter:brightness(1.12) saturate(1.08);transform:translateY(-2px)}#start .pixel-button:active{transform:translateY(3px)}
+
+/* In-game HUD and controls */
+#hud{z-index:4;inset:12px 12px auto;gap:5px;align-items:stretch;color:#fff2bd;text-shadow:2px 2px #092118;letter-spacing:1px}
+#hud>div{min-width:57px;padding:5px 6px 6px;border:2px solid #83a761;border-radius:5px;background:#0e3026dd;box-shadow:0 3px 0 #061b15;font:bold 8px 'Courier New',monospace;text-align:center}
+#hud>div:last-child{text-align:center}#hud #stageHud{flex:1;min-width:76px;color:#ffdc69;font-size:9px}#hud strong{display:block;margin-top:2px;font-size:19px;letter-spacing:2px}
+.pause-button{top:11px;padding:6px 11px;border:2px solid #2d5138;border-radius:4px;background:#fff0b7;color:#2b4e37;box-shadow:0 3px 0 #102a1e;font:bold 11px 'Courier New',monospace;letter-spacing:1px}
+.attack-button{right:13px;bottom:13px;min-height:45px;padding:8px 12px;border:2px solid #5a301d;border-radius:5px;background:#d96436;color:#fff0bc;box-shadow:0 4px 0 #3f2519;font:bold 11px 'Courier New',monospace;letter-spacing:1px}
+.move-button{min-width:50px;min-height:46px;border-radius:5px}.jump-button{min-width:62px;min-height:62px}
+.pause-button:hover,.attack-button:hover,.move-button:hover,.jump-button:hover{filter:brightness(1.13);transform:translateY(-1px)}
+
+/* Map and result screens */
+#mapOverlay{z-index:8;background:#061a14dc;backdrop-filter:blur(3px)}
+.map-card{width:min(420px,100%);border:3px solid #a4bd73;border-radius:10px;background:linear-gradient(180deg,#eaf0ca,#c9dda5);box-shadow:0 0 0 4px #102b1e,0 18px 35px #020f0baa;color:#345237;padding:20px 15px}
+.map-card h2{margin:0 0 14px;color:#345237;font:bold 23px 'Courier New',monospace;letter-spacing:2px;text-shadow:1px 2px #ffffff88}
+.map-path{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 16px}.map-arrow{display:none}
+.map-node{min-height:66px;border:2px solid #78965b;border-radius:5px;background:#e4ecc1;color:#385438;box-shadow:0 3px 0 #536f42;font:bold 9px/1.25 'Courier New',monospace;transition:transform .15s ease,background .15s ease}
+.map-node:hover,.map-node.selected{background:#f7c95b;border-color:#7a4c26;transform:translateY(-2px)}.map-node:disabled{filter:grayscale(.8)}.map-close{min-height:40px;border-radius:4px;box-shadow:0 3px 0 #4f361e}
+.over-card{min-width:300px;padding:28px 30px;border:3px solid #b5d17c;border-radius:10px;background:#123c31f5;box-shadow:0 0 0 4px #061b15,0 18px 35px #020f0baa}.over-card .pixel-button{min-height:49px;border-radius:5px}.secondary-button{opacity:.9}
+button:focus-visible{outline:3px solid #fff3a4;outline-offset:3px}
+@media(max-width:520px){main{padding:24px 10px}.bezel{font-size:9px}.bezel::before{content:"JUNGLE RUN"}#start{padding:8px 10px 16px}#start::before{inset:6px}#start .logo-title{margin-bottom:6px}#start .character-choice{min-height:57px}#start .character-choice strong{font-size:13px}#start .pixel-button{width:min(100%,220px);font-size:21px}#hud{inset:9px 7px auto;gap:3px}#hud>div{min-width:49px;padding:4px;font-size:7px}#hud strong{font-size:16px}#hud #stageHud{min-width:62px;font-size:7px}.map-card{padding:16px 10px}.map-node{min-height:58px;font-size:8px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}
