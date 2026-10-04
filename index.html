@@ -38,11 +38,15 @@
     .skin-button:disabled{cursor:not-allowed;opacity:.5;box-shadow:none}
     .pause-button{position:absolute;z-index:4;top:12px;left:50%;transform:translateX(-50%);display:none;cursor:pointer;border:2px solid #294928;background:#e8efcf;color:#294928;font:bold 12px 'Courier New',monospace;padding:5px 10px;box-shadow:0 2px #294928}
     #game.playing .pause-button,#game.paused .pause-button{display:block}
-    .attack-button{position:absolute;z-index:4;right:12px;bottom:12px;display:none;cursor:pointer;border:2px solid #4f361e;background:#f7c75b;color:#4a361f;font:bold 12px 'Courier New',monospace;padding:8px 11px;box-shadow:0 3px #4f361e;touch-action:manipulation}
+    .attack-button{position:absolute;z-index:4;right:12px;bottom:12px;display:none;cursor:pointer;border:2px solid #4f361e;background:#d88945;color:#fff4d0;font:bold 11px 'Courier New',monospace;padding:8px 10px;box-shadow:0 3px #4f361e;touch-action:manipulation}
     #game.playing .attack-button,#game.paused .attack-button{display:block}
-    .move-button{position:absolute;z-index:4;bottom:12px;display:none;width:42px;height:38px;cursor:pointer;border:2px solid #294928;background:#e8efcf;color:#294928;font:bold 18px 'Courier New',monospace;box-shadow:0 3px #294928;touch-action:none}
-    .move-left{left:12px}.move-right{left:62px}
-    #game.playing .move-button,#game.paused .move-button{display:block}
+    .move-button{position:absolute;z-index:4;bottom:12px;display:none;width:52px;height:48px;cursor:pointer;border:2px solid #294928;background:#e8efcf;color:#294928;font:bold 22px 'Courier New',monospace;box-shadow:0 3px #294928;touch-action:none;-webkit-tap-highlight-color:transparent}
+    .dpad{position:absolute;z-index:4;left:12px;bottom:12px;display:none;width:112px;height:48px;filter:drop-shadow(0 3px #294928)}
+    .dpad .move-button{position:absolute;bottom:0;box-shadow:none}
+    .move-left{left:0;border-radius:8px 0 0 8px}.move-right{left:56px;border-radius:0 8px 8px 0}
+    .jump-button{position:absolute;z-index:4;right:92px;bottom:12px;display:none;width:58px;height:58px;border:3px solid #4f361e;border-radius:50%;cursor:pointer;background:#f7c75b;color:#4a361f;font:bold 11px 'Courier New',monospace;box-shadow:0 4px #4f361e;touch-action:none;-webkit-tap-highlight-color:transparent}
+    .jump-button:active,.attack-button:active,.move-button:active{transform:translateY(3px);box-shadow:0 1px #4f361e}
+    #game.playing .dpad,#game.paused .dpad,#game.playing .jump-button,#game.paused .jump-button{display:block}
     .secondary-button{margin-top:14px;background:#d9e8b6;font-size:16px;min-height:42px;padding:9px 18px}
     .secondary-button:hover{background:#c8dba0}
     @media(max-width:650px){.character-select{margin-bottom:13px}.character-choice{font-size:12px;padding:7px 9px}.character-choice strong{font-size:13px}.character-choice small{font-size:9px}}
@@ -75,9 +79,9 @@
         <canvas id="world" width="360" height="540" aria-label="짧게 누르면 낮은 점프, 길게 누르면 높은 점프"></canvas>
         <div class="vignette"></div>
         <button id="pauseButton" class="pause-button" type="button" aria-label="일시정지">PAUSE</button>
+        <div class="dpad" aria-label="방향 조작"><button id="leftButton" class="move-button move-left" type="button" aria-label="왼쪽 이동">◀</button><button id="rightButton" class="move-button move-right" type="button" aria-label="오른쪽 이동">▶</button></div>
+        <button id="jumpButton" class="jump-button" type="button" aria-label="점프">JUMP</button>
         <button id="attackButton" class="attack-button" type="button" aria-label="공격">ATTACK <span>✦</span></button>
-        <button id="leftButton" class="move-button move-left" type="button" aria-label="왼쪽 이동">◀</button>
-        <button id="rightButton" class="move-button move-right" type="button" aria-label="오른쪽 이동">▶</button>
         <div id="hud" hidden><div>BEST<strong id="best">000000</strong></div><div id="stageHud">GREEN WOODS</div><div id="comboHud" hidden>COMBO<strong id="combo">x1</strong></div><div>SCORE<strong id="score">000000</strong></div></div>
         <div id="start" class="overlay">
           <h1 class="logo-title"><img src="title-logo-transparent.png" width="2172" height="724" alt="다람쥐의 모험 — CHIPMUNK ADVENTURE" draggable="false"></h1>
