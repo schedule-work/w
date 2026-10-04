@@ -2,7 +2,7 @@
 (() => {
 const canvas=document.getElementById('world'),ctx=canvas.getContext('2d');
 const $=id=>document.getElementById(id),W=360,H=540,GROUND=420,PX=68;
-const GRAVITY=1100,JUMP=340,AIR=.91,MAX_SPEED=280,HOLD_LIMIT=.22;
+const GRAVITY=1100,JUMP=340,PLATFORM_JUMP=500,AIR=.91,MAX_SPEED=280,HOLD_LIMIT=.22;
 const gameMode='platformer';
 let jumpHeld=false,sustainAllowed=false,holdTime=0,activePointer=null,leftHeld=false,rightHeld=false;const heldKeys=new Set();
 let introCount=0,difficultyTier=0;
@@ -102,7 +102,8 @@ function squirrelDraw(x,feet,t,pose){
  const f=pose==='crash'?5:pose==='land'?4:pose==='jump'?3:pose==='idle'?0:Math.floor(t*(9+speed/65))%3;
  const [sx,sy,sw,sh]=frames[f],dw=72*.8,dh=sh/sw*dw;
  if(selectedSkin==='gold'&&best>=3000)ctx.filter='sepia(1) saturate(2) hue-rotate(325deg) brightness(1.15)';
- ctx.drawImage(sheet,f%3*512+sx,Math.floor(f/3)*512+sy,sw,sh,Math.round(x-43*.8),Math.round(feet-dh),dw,dh);
+ const dx=Math.round(x-43*.8),dy=Math.round(feet-dh),facingLeft=gameMode==='platformer'&&playerVX<-20;
+ if(facingLeft){ctx.save();ctx.scale(-1,1);ctx.drawImage(sheet,f%3*512+sx,Math.floor(f/3)*512+sy,sw,sh,-dx-dw,dy,dw,dh);ctx.restore()}else ctx.drawImage(sheet,f%3*512+sx,Math.floor(f/3)*512+sy,sw,sh,dx,dy,dw,dh);
  ctx.filter='none';
 }
 let audio=null,musicNext=0,musicStep=0;
@@ -114,12 +115,12 @@ function music(){if(!audio||!musicEnabled||state!=='playing'||document.hidden)re
 function puff(x,yy,count=6,color='#e7d9a0'){for(let i=0;i<count;i++)particles.push({x,y:yy,vx:rand(-45,25),vy:rand(-45,-10),life:rand(.2,.45),color,size:rand(2,4)})}
 function start(){introCount=0;difficultyTier=selectedStartStage;jumpHeld=false;holdTime=0;heldKeys.clear();activePointer=null;state='playing';paused=false;const startScore=selectedStartStage*1500;elapsed=0;distance=startScore*12;bonus=0;score=startScore;combo=0;comboTimer=0;jumpsUsed=0;bossShown=false;bossHits=0;attackCooldown=0;speed=200;spawnAt=W+30;y=GROUND;vy=0;land=0;obstacles=[];items=[];pits=[];projectiles=[];falling=false;particles=[];popups=[];milestone=Math.floor(startScore/1000);flash=0;newBest=false;acc=0;resetPlatformLevel();$('mapOverlay').hidden=true;$('start').hidden=true;$('over').hidden=true;$('hud').hidden=false;$('over').querySelector('h2').textContent='GAME OVER';$('game').classList.remove('paused');$('game').classList.add('playing');$('pauseButton').textContent='PAUSE';initAudio();updateHud();}
 function togglePause(){if(state==='playing'){state='paused';$('game').classList.remove('playing');$('game').classList.add('paused');$('pauseButton').textContent='RESUME'}else if(state==='paused'){state='playing';$('game').classList.remove('paused');$('game').classList.add('playing');$('pauseButton').textContent='PAUSE';last=0}}
-function attack(){if(state!=='playing'||attackCooldown>0)return;attackCooldown=.28;if(gameMode==='platformer')projectiles.push({x:playerX+22,y:playerY+12,vx:390,life:1.15,type:selectedCharacter==='tiger'?'roar':'acornShot'});else projectiles.push({x:PX+18,y:y-25,vx:390,life:1.15,type:selectedCharacter==='tiger'?'roar':'acornShot'});sound('attack')}
+function attack(){if(state!=='playing'||attackCooldown>0)return;attackCooldown=.28;if(gameMode==='platformer'){const facingLeft=playerVX<-20;projectiles.push({x:facingLeft?playerX-10:playerX+22,y:playerY+12,vx:facingLeft?-390:390,life:1.15,type:selectedCharacter==='tiger'?'roar':'acornShot'})}else projectiles.push({x:PX+18,y:y-25,vx:390,life:1.15,type:selectedCharacter==='tiger'?'roar':'acornShot'});sound('attack')}
 function jump(){
  if(state!=='playing')return;
  if(gameMode==='platformer'){
-  if(platformGrounded){playerVY=-JUMP;jumpsUsed=1;sound('jump');return}
-  if(selectedCharacter==='squirrel'&&jumpsUsed<2){playerVY=-JUMP*.86;jumpsUsed=2;sound('jump')}
+  if(platformGrounded){playerVY=-PLATFORM_JUMP;jumpsUsed=1;sound('jump');return}
+  if(selectedCharacter==='squirrel'&&jumpsUsed<2){playerVY=-PLATFORM_JUMP*.86;jumpsUsed=2;sound('jump')}
   return;
  }
  if(falling)return;if(y>=GROUND-.1&&vy===0){vy=-JUMP;jumpsUsed=1;sustainAllowed=true;holdTime=0;land=0;puff(PX-9,GROUND-2);sound('jump');return}if(selectedCharacter==='squirrel'&&y<GROUND&&jumpsUsed<2){vy=-JUMP*.86;jumpsUsed=2;sustainAllowed=true;holdTime=0;puff(PX-9,y-2,5,'#dce8b7');sound('jump')}
